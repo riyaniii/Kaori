@@ -109,7 +109,7 @@ class KaghezWindow(Adw.ApplicationWindow):
             current_page = self.main_stack.get_visible_child().get_visible_page()
             maybe_reader = self.main_nav_view.get_visible_page()
 
-            if isinstance(current_page, MangaPage) and not isinstance(maybe_reader, ReaderPage):
+            if isinstance(maybe_reader, ReaderPage) or isinstance(current_page, MangaPage):
                 self.overlay_split_view.set_show_sidebar(opening)
             else:
                 return

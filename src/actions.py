@@ -16,7 +16,11 @@ def toggle_chapter_panel(app):
 
     current_page = window.main_stack.get_visible_child().get_visible_page()
     maybe_reader = window.main_nav_view.get_visible_page()
-    if isinstance(current_page, Widgets.manga.MangaPage) and not isinstance(maybe_reader, ReaderPage):
+    if isinstance(maybe_reader, ReaderPage):
+        window.chapter_panel.set_manga_model(maybe_reader.manga_model)
+        split_view = window.overlay_split_view
+        split_view.set_show_sidebar(not split_view.get_show_sidebar())
+    elif isinstance(current_page, Widgets.manga.MangaPage):
         split_view = window.overlay_split_view
         split_view.set_show_sidebar(not split_view.get_show_sidebar())
     else:
@@ -53,11 +57,13 @@ async def show_reader(app, manga_id: int, chapter_id: int):
     manga_model = app.suwayomi.getModel(manga_id, 'Manga')
     chapter_model = app.suwayomi.getModel(chapter_id, 'Chapter')
 
-    nav_view = app.get_active_window().main_nav_view
+    window = app.get_active_window()
+    nav_view = window.main_nav_view
 
     page = Widgets.reader.ReaderPage(manga_model, chapter_model)
 
     nav_view.push(page)
+    window.chapter_panel.set_manga_model(manga_model)
 
 
 async def show_extension(app, pkg_name: str):
