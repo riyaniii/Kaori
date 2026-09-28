@@ -181,6 +181,7 @@ class ReaderPage(Adw.NavigationPage):
         self.on_setting_changed()
 
     def on_key_pressed(self, controller, keyval, keycode, state):
+
         rtl = self.direction == Gtk.TextDirection.RTL
 
         if state & Gdk.ModifierType.CONTROL_MASK and keyval in (Gdk.KEY_Right, Gdk.KEY_Left):
@@ -210,6 +211,9 @@ class ReaderPage(Adw.NavigationPage):
 
         if keyval == Gdk.KEY_BackSpace:
             self.activate_action("reader.previous_page")
+            return True
+        if keyval == Gdk.KEY_Escape:
+            self.get_root().main_nav_view.pop()
             return True
 
         return False
