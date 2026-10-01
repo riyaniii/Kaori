@@ -1,4 +1,4 @@
-from gi.repository import Gtk, Adw, GLib, Gdk, Pango
+from gi.repository import Gtk, Adw, GLib, Gdk, Pango, GObject
 
 import asyncio
 
@@ -10,6 +10,8 @@ from .chapter import ChapterPanel
 from .manga import MangaPage
 from .reader import ReaderPage
 
+from ..constants import NAME
+
 SWIPE_COMMIT_DISTANCE = 40.0
 SWIPE_COMMIT_VELOCITY = 600.0
 
@@ -17,6 +19,8 @@ SWIPE_COMMIT_VELOCITY = 600.0
 @Gtk.Template(resource_path='/com/rini/kaghez/window.ui')
 class KaghezWindow(Adw.ApplicationWindow):
     __gtype_name__ = 'KaghezWindow'
+
+    name = GObject.Property(type=str)
 
     main_stack = Gtk.Template.Child()
     overlay_split_view = Gtk.Template.Child()
@@ -28,7 +32,7 @@ class KaghezWindow(Adw.ApplicationWindow):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
+        self.name = NAME
         list(list(list(list(list(list(self.header_bar)[0])[0])[1])[0])[0])[0].set_ellipsize(Pango.EllipsizeMode.NONE)
 
         self.create_action(actions.show_manga, parameter_type="i")

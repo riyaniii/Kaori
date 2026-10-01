@@ -5,12 +5,12 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
 
-  <name>Kaghez</name>
+  <name>Kaori</name>
   <summary>Discover and read comics on your device</summary>
 
   <description>
     <p>
-      Kaghez allows you to discover, download and read comics with a beautiful
+      Kaori allows you to discover, download and read comics with a beautiful
       looking UI, and natural touchpad gestures.
     </p>
   </description>
@@ -19,11 +19,11 @@
     <name>Riyan Parvez</name>
   </developer>
 
-  <url type="homepage">https://github.com/riyaniii/Kaghez</url>
-  <url type="vcs-browser">https://github.com/riyaniii/Kaghez</url>
-  <url type="bugtracker">https://github.com/riyaniii/Kaghez/issues</url>
+  <url type="homepage">https://github.com/riyaniii/Kaori</url>
+  <url type="vcs-browser">https://github.com/riyaniii/Kaori</url>
+  <url type="bugtracker">https://github.com/riyaniii/Kaori/issues</url>
   <url type="contact">https://github.com/riyaniii</url>
-  <url type="contribute">https://github.com/riyaniii/Kaghez</url>
+  <url type="contribute">https://github.com/riyaniii/Kaori</url>
 
   <translation type="gettext">kaghez</translation>
 
@@ -66,7 +66,7 @@
   <releases>
     <release version="0.8.8" date="2026-09-23">
       <url type="details">
-        https://github.com/riyaniii/Kaghez/releases/tag/v0.8.8
+        https://github.com/riyaniii/Kaori/releases/tag/v0.8.8
       </url>
       <description translate="no">
         <p>

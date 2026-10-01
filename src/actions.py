@@ -16,7 +16,7 @@ def toggle_chapter_panel(app):
 
     current_page = window.main_stack.get_visible_child().get_visible_page()
     maybe_reader = window.main_nav_view.get_visible_page()
-    if isinstance(current_page, Widgets.manga.MangaPage) and not isinstance(maybe_reader, ReaderPage):
+    if isinstance(current_page, Widgets.manga.MangaPage) or isinstance(maybe_reader, ReaderPage):
         split_view = window.overlay_split_view
         split_view.set_show_sidebar(not split_view.get_show_sidebar())
     else:

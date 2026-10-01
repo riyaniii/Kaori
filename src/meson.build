@@ -32,6 +32,7 @@ blueprints = files(
 
   'ui/download/row.blp',
   'ui/download/page.blp',
+  'ui/download/dialog.blp',
 
   'ui/containers/manga_grid.blp',
   'ui/containers/row.blp',
@@ -85,10 +86,11 @@ kaghez_sources = [
   '__init__.py',
   'main.py',
   'actions.py',
+  'constants.py'
 ]
 
 install_data(kaghez_sources, install_dir: moduledir)
-install_data('Suwayomi-Server-v2.3.2361.jar', install_dir: pkgdatadir)
+install_data('Suwayomi-Server-v2.3.2363.jar', install_dir: pkgdatadir)
 
 subdir('integrations')
 subdir('widgets')

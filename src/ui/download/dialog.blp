@@ -1,0 +1,20 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaghezDownloadDialog : Adw.Dialog {
+  can-close: true;
+  content-width: 300;
+  content-height: 300;
+
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+
+    }
+
+    content: Gtk.Box {
+      orientation: vertical;
+      spacing: 12;
+    };
+  };
+}

@@ -1,6 +1,6 @@
 import asyncio
 from dataclasses import dataclass
-from gi.repository import Adw, Gio, GObject, Gtk
+from gi.repository import Adw, Gio, GObject, Gtk, GLib
 
 from .extension_stores import ExtensionStoresDialog
 
@@ -24,6 +24,7 @@ class KaghezPreferences(Adw.PreferencesDialog):
     __gtype_name__ = "KaghezPreferencesDialog"
 
     cbz_row = Gtk.Template.Child()
+    location_row = Gtk.Template.Child()
     orientation_row = Gtk.Template.Child()
     direction_row = Gtk.Template.Child()
 
@@ -33,6 +34,7 @@ class KaghezPreferences(Adw.PreferencesDialog):
     def __init__(self):
         super().__init__()
         self.suwayomi = Gio.Application.get_default().suwayomi
+        self._location_dialog = None
 
         self.mode_stack = Adw.ViewStack()
         for option in MODE_OPTIONS:
@@ -49,6 +51,17 @@ class KaghezPreferences(Adw.PreferencesDialog):
             self.suwayomi.getGlobalReaderSettings(),
         )
         self.cbz_row.set_active(settings.get("downloadAsCbz", False))
+        downloads_path = settings.get("downloadsPath")
+
+        if downloads_path:
+            self.location_row.set_subtitle(
+                Gio.File.new_for_path(downloads_path).get_basename()
+            )
+        else:
+            self.location_row.set_subtitle(
+                "Choose where downloaded chapters are stored"
+            )
+
         if reader.get("mode") is not None:
             self.mode_stack.set_visible_child_name(reader["mode"])
         self.orientation_row.set_selected(1 if reader.get("orientation") == "horizontal" else 0)
@@ -74,6 +87,23 @@ class KaghezPreferences(Adw.PreferencesDialog):
     @Gtk.Template.Callback()
     def on_orientation_changed(self, row, pspec):
         self.save_reading_mode()
+
+    @Gtk.Template.Callback()
+    def on_location_activated(self, row):
+        self._location_dialog = Gtk.FileDialog(title="Select Download Location")
+        self._location_dialog.select_folder(self.get_root(), None, self.on_location_selected)
+
+    def on_location_selected(self, dialog, result):
+        try:
+            folder = dialog.select_folder_finish(result)
+        except GLib.Error:
+            return
+        finally:
+            self._location_dialog = None
+        path = folder.get_path()
+        if path:
+            self.location_row.set_subtitle(folder.get_basename())
+            asyncio.create_task(self.suwayomi.setDownloadsPath(path))
 
     @Gtk.Template.Callback()
     def on_direction_changed(self, row, pspec):

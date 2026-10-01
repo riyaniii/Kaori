@@ -1,7 +1,7 @@
-<p align="center"><img src="https://raw.githubusercontent.com/riyaniii/Kaghez/1a4a59ccb36fa2adab57c866f6e41623bd34de89/data/icons/hicolor/scalable/apps/com.rini.kaghez.svg">
-<h1 align="center">Kaghez</h1>
+<p align="center"><img src="https://raw.githubusercontent.com/riyaniii/Kaori/1a4a59ccb36fa2adab57c866f6e41623bd34de89/data/icons/hicolor/scalable/apps/com.rini.kaghez.svg">
+<h1 align="center">Kaori</h1>
 
-Kaghez allows you to discover, download and read comics with a beautiful looking UI, and natural touchpad gestures.
+Kaori allows you to discover, download and read comics with a beautiful looking UI, and natural touchpad gestures.
 
 ## Features
 
@@ -11,13 +11,13 @@ Kaghez allows you to discover, download and read comics with a beautiful looking
 - Built-in reader with single-page, double-page, and webtoon (continuous scroll) modes
 - Natural touchpad gesture navigation (Pinch to zoom/two-finger scroll to move)
 
-Kaghez connects to/runs [Suwayomi](https://github.com/Suwayomi/Suwayomi-Server) as the backend.
+Kaori connects to/runs [Suwayomi](https://github.com/Suwayomi/Suwayomi-Server) as the backend.
 
 ### Installation
-You can install Kaghez as flatpak
+You can install Kaori as flatpak
 <p>
-  <a href="https://github.com/riyaniii/Kaghez/releases">
-    <img src="https://img.shields.io/badge/⬇%20Download%20Kaghez-GitHub%20Releases-181717?style=for-the-badge&logo=github&logoColor=white" height="60">
+  <a href="https://github.com/riyaniii/Kaori/releases">
+    <img src="https://img.shields.io/badge/⬇%20Download%20Kaori-GitHub%20Releases-181717?style=for-the-badge&logo=github&logoColor=white" height="60">
   </a>
 </p>
 
@@ -56,3 +56,5 @@ You can install Kaghez as flatpak
       <strong>Downloads</strong>
     </td>
   </tr>
+
+

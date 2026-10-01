@@ -672,6 +672,9 @@ class Suwayomi(GObject.Object):
     async def setDownloadAsCbz(self, value: bool):
         await self.setServerSettings(downloadAsCbz=value)
 
+    async def setDownloadsPath(self, path: str):
+        await self.setServerSettings(downloadsPath=path)
+
     async def getExtensionStores(self) -> list:
         settings = await self.getServerSettings()
         return settings.get('extensionRepos') or []

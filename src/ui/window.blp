@@ -2,8 +2,9 @@ using Gtk 4.0;
 using Adw 1;
 
 template $KaghezWindow : Adw.ApplicationWindow {
-  default-width: 1100;
-  default-height: 700;
+  width-request: 1100;
+  height-request: 700;
+
 
   Adw.Breakpoint {
     condition ("max-width: 700sp")
@@ -21,7 +22,7 @@ template $KaghezWindow : Adw.ApplicationWindow {
 
     content: Adw.NavigationView main_nav_view {
       Adw.NavigationPage {
-        title: "Kaghez";
+        title: bind template.name;
         child: Adw.OverlaySplitView main_split_view {
           min-sidebar-width: 200;
           max-sidebar-width: 260;
@@ -30,7 +31,7 @@ template $KaghezWindow : Adw.ApplicationWindow {
             [top]
             Adw.HeaderBar header_bar {
               title-widget: Adw.WindowTitle {
-                title: "Kaghez";
+                title: bind template.name;
               };
               [end]
               Gtk.MenuButton {
@@ -130,7 +131,7 @@ menu primary_menu {
       action: "app.shortcuts";
     }
     item {
-      label: _("About Kaghez");
+      label: _("About Kaori");
       action: "app.about";
     }
   }

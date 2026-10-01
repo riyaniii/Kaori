@@ -1,24 +1,30 @@
 using Gtk 4.0;
-using Adw 1;
 
-template $KaghezDoublePageReader : $KaghezReaderBase {
-  child: Gtk.Box {
-    orientation: horizontal;
-    homogeneous: true;
-    halign: center;
+template $KaghezDoublePageReader : $KaghezPagedReader {
+  child: Gtk.ScrolledWindow scrolled_window {
+    child: Gtk.Box spread {
+      homogeneous: true;
+      halign: center;
 
-    Gtk.Picture right_picture {
-      content-fit: contain;
-      hexpand: true;
-      halign: end;
-      valign: center;
-    }
+      Gtk.AspectFrame left_frame {
+        obey-child: true;
+        xalign: 1;
+        yalign: 0.5;
 
-    Gtk.Picture left_picture {
-      content-fit: contain;
-      hexpand: true;
-      halign: start;
-      valign: center;
-    }
+        child: Gtk.Picture left_picture {
+          content-fit: contain;
+        };
+      }
+
+      Gtk.AspectFrame right_frame {
+        obey-child: true;
+        xalign: 0;
+        yalign: 0.5;
+
+        child: Gtk.Picture right_picture {
+          content-fit: contain;
+        };
+      }
+    };
   };
 }

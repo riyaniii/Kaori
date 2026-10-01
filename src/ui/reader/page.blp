@@ -22,6 +22,7 @@ template $KaghezReaderPage : Adw.NavigationPage {
         Gtk.Button {
           icon-name: "go-previous-symbolic";
           clicked => $on_back_clicked();
+          tooltip-text: bind template.manga_model as <$KaghezManga> .title;
         }
 
         [start]
@@ -29,7 +30,13 @@ template $KaghezReaderPage : Adw.NavigationPage {
           styles ["little-bold"]
           label: bind template.chapter_model as <$KaghezChapter> .name;
           ellipsize: middle;
+          tooltip-text: bind template.chapter_model as <$KaghezChapter> .name;
         }
+
+        title-widget: Adw.WindowTitle {
+          title: bind template.chapter_model as <$KaghezChapter> .name;
+          tooltip-text: bind template.chapter_model as <$KaghezManga> .title;
+        };
 
         [end]
         Gtk.Box {
@@ -38,11 +45,13 @@ template $KaghezReaderPage : Adw.NavigationPage {
           Gtk.Button {
             icon-name: "sliders-horizontal-symbolic";
             clicked => $on_settings_clicked();
+            tooltip-text: _("Open Reader Settings");
           }
 
           Gtk.Button {
             icon-name: "panel-right-symbolic";
             action-name: "app.toggle_chapter_panel";
+            tooltip-text: _("Show Chapter Panel");
           }
         }
       };

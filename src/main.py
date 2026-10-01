@@ -1,224 +1,210 @@
-import sys
-import signal
 import asyncio
-import gi
 import os
+import signal
+import sys
 import traceback
-
 from gettext import gettext as _
+
+import gi
 
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 from gi.events import GLibEventLoopPolicy
 asyncio.set_event_loop_policy(GLibEventLoopPolicy())
 
-from gi.repository import Gtk, Gio, Adw, GObject, GLib
+from gi.repository import Adw, Gio, GLib
+
+from .constants import NAME, set_version
+from .integrations import Suwayomi
 from .widgets import KaghezWindow, build_shortcuts
 from .widgets.preferences import KaghezPreferences
 from .widgets.setup import SetupWindow
 
-from .integrations import Suwayomi
+JAR_NAME = 'Suwayomi-Server-v2.3.2363.jar'
+LOCAL_URL = 'http://localhost:4567'
+READY_TIMEOUT = 10
+POLL_INTERVAL = 0.5
 
-LOCAL_SERVER_URL = "http://localhost:4567"
-SERVER_READY_TIMEOUT = 10
-SERVER_POLL_INTERVAL = 0.5
+
+class LocalServer:
+    def __init__(self):
+        self.proc: Gio.Subprocess | None = None
+        self.pump: asyncio.Task | None = None
+
+    @staticmethod
+    def jar_path() -> str | None:
+        pkgdatadir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        path = os.path.join(pkgdatadir, JAR_NAME)
+        return path if os.path.isfile(path) else None
+
+    def start(self) -> bool:
+        if self.proc:
+            return True
+        jar = self.jar_path()
+        if not jar:
+            print('local Suwayomi server jar not found')
+            return False
+
+        launcher = Gio.SubprocessLauncher.new(
+            Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_MERGE)
+        try:
+            self.proc = launcher.spawnv([
+                'java',
+                '-Dsuwayomi.tachidesk.config.server.systemTrayEnabled=false',
+                '-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false',
+                '-Dsuwayomi.tachidesk.config.server.kcefEnabled=false',
+                '-jar', jar,
+            ])
+        except GLib.Error as e:
+            print(f'failed to start local server: {e.message}')
+            return False
+
+        self.pump = asyncio.create_task(self._pump_output())
+        return True
+
+    def stop(self):
+        if self.pump:
+            self.pump.cancel()
+            self.pump = None
+        if self.proc:
+            if self.proc.get_identifier():
+                self.proc.send_signal(signal.SIGTERM)
+                try:
+                    self.proc.wait(None)
+                except GLib.Error:
+                    self.proc.force_exit()
+            self.proc = None
+
+    async def _pump_output(self):
+        stream = Gio.DataInputStream.new(self.proc.get_stdout_pipe())
+        try:
+            while (line := await stream.read_line_async(GLib.PRIORITY_DEFAULT)[0]) is not None:
+                print(f'[suwayomi] {line.decode(errors="replace")}', flush=True)
+        except GLib.Error as e:
+            print(f'[suwayomi] {e.message}', flush=True)
 
 
 class KaghezApplication(Adw.Application):
-    """The main application singleton class."""
 
-    def __init__(self):
+    def __init__(self, version):
         super().__init__(application_id='com.rini.kaghez',
                          flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
                          resource_base_path='/com/rini/kaghez')
-        self.settings = Gio.Settings(schema_id="com.rini.kaghez")
+        self.version = version
+        self.settings = Gio.Settings(schema_id='com.rini.kaghez')
         self.suwayomi = Suwayomi()
-
-        self.server_proc: Gio.Subprocess | None = None
-        self.server_output_task: asyncio.Task | None = None
+        self.server = LocalServer()
 
         self.create_action('quit', lambda *_: self.quit(), ['<control>q'])
         self.create_action('preferences', self.on_preferences_action, ['<control>comma'])
-        self.create_action('shortcuts', self.on_shortcuts_action, ['<control>question', '<control>slash'])
+        self.create_action('shortcuts', self.on_shortcuts_action,
+                           ['<control>question', '<control>slash'])
         self.create_action('about', self.on_about_action)
-        self.create_action('change-instance', self.on_change_instance_action)
+        self.create_action('change_instance', self.on_change_instance_action)
 
     def do_activate(self):
-        """Called when the application is activated."""
-        win = self.props.active_window
-        if win:
+        if win := self.props.active_window:
             win.present()
             return
 
         mode = self.settings.get_string('suwayomi-mode')
-        if mode in ("local", "remote"):
-            # Returning user: try the saved config with nothing visible.
-            # hold() keeps GApplication alive while no window exists yet.
-            self.hold()
-            task = asyncio.create_task(self.launch_or_setup(mode, self.settings.get_string('suwayomi-url')))
-            task.add_done_callback(self.log_task_exception)
-        else:
+        if mode not in ('local', 'remote'):
             self.show_setup_window()
+            return
+
+        self.hold()
+        task = asyncio.create_task(
+            self.launch_or_setup(mode, self.settings.get_string('suwayomi-url')))
+        task.add_done_callback(self.log_task_error)
+
+    def do_shutdown(self):
+        self.server.stop()
+        self.suwayomi.cache.close()
+        Adw.Application.do_shutdown(self)
 
     @staticmethod
-    def log_task_exception(task: asyncio.Task):
-        if task.cancelled():
-            return
-        exc = task.exception()
-        if exc is not None:
-            print("launch_or_setup crashed:", flush=True)
-            traceback.print_exception(type(exc), exc, exc.__traceback__)
+    def log_task_error(task: asyncio.Task):
+        if not task.cancelled() and (exc := task.exception()):
+            traceback.print_exception(exc)
 
     async def launch_or_setup(self, mode: str, url: str):
         try:
             if not await self.launch(mode, url):
-                self.show_setup_window(error=_("Couldn't reconnect. Check your setup and try again."))
+                self.show_setup_window(
+                    error=_("Couldn't reconnect. Check your setup and try again."))
         finally:
             self.release()
 
     async def launch(self, mode: str, url: str) -> bool:
-        """Get a server running (local or remote) and wait until it
-        actually answers before doing anything else. Returns whether it
-        succeeded; presents the main window itself on success."""
-        if mode == "local":
-            if not await self.start_local_server():
-                return False
-            server_url = LOCAL_SERVER_URL
-        else:
-            if not url:
-                return False
-            server_url = url
+        local = mode == 'local'
+        if local and not self.server.start():
+            return False
+        if not local and not url:
+            return False
 
-        self.suwayomi.reconnect(server_url)
+        self.suwayomi.reconnect(LOCAL_URL if local else url)
 
-        if not await self.wait_for_server_ready():
-            if mode == "local":
-                self.stop_local_server()
+        if not await self.wait_for_server():
+            if local:
+                self.server.stop()
             return False
 
         self.settings.set_string('suwayomi-mode', mode)
-        self.settings.set_string('suwayomi-url', url if mode == "remote" else "")
-
+        self.settings.set_string('suwayomi-url', '' if local else url)
         KaghezWindow(application=self).present()
         return True
 
-    def find_bundled_jar(self) -> str | None:
-        moduledir = os.path.dirname(os.path.abspath(__file__))
-        pkgdatadir = os.path.dirname(moduledir)
-        jar_path = os.path.join(pkgdatadir, 'Suwayomi-Server-v2.3.2361.jar')
-        return jar_path if os.path.isfile(jar_path) else None
-
-    async def start_local_server(self) -> bool:
-        if self.server_proc is not None:
-            return True  # already running
-
-        jar_path = self.find_bundled_jar()
-        if jar_path is None:
-            print("local Suwayomi server jar not found")
-            return False
-
-        launcher = Gio.SubprocessLauncher.new(
-            Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_MERGE
-        )
-        try:
-            self.server_proc = launcher.spawnv([
-                "java",
-                "-Dsuwayomi.tachidesk.config.server.systemTrayEnabled=false",
-                "-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false",
-                "-Dsuwayomi.tachidesk.config.server.kcefEnabled=false",
-                "-jar", jar_path,
-            ])
-        except GLib.Error as e:
-            print(f"failed to start local server: {e.message}")
-            self.server_proc = None
-            return False
-
-        self.server_output_task = asyncio.create_task(self.pump_server_output())
-        return True
-
-    async def pump_server_output(self):
-        """Drain the server's stdout/stderr so crashes/logs are visible
-        instead of silently filling an unread pipe."""
-        if self.server_proc is None:
-            return
-        stdout = self.server_proc.get_stdout_pipe()
-        stream = Gio.DataInputStream.new(stdout)
-        try:
-            while True:
-                line, _len = await stream.read_line_async(GLib.PRIORITY_DEFAULT)
-                if line is None:
-                    break
-                print(f"[suwayomi] {line.decode('utf-8', errors='replace')}", flush=True)
-        except GLib.Error as e:
-            print(f"[suwayomi] output stream error: {e.message}", flush=True)
-
-    def stop_local_server(self):
-        if self.server_proc is None:
-            return
-        if self.server_proc.get_identifier():
-            self.server_proc.send_signal(signal.SIGTERM)
-            try:
-                self.server_proc.wait(None)
-            except GLib.Error:
-                self.server_proc.force_exit()
-        self.server_proc = None
-        if self.server_output_task is not None:
-            self.server_output_task.cancel()
-            self.server_output_task = None
-
-    async def wait_for_server_ready(self, timeout: float = SERVER_READY_TIMEOUT) -> bool:
-        loop = asyncio.get_event_loop()
-        deadline = loop.time() + timeout
+    async def wait_for_server(self) -> bool:
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + READY_TIMEOUT
         while loop.time() < deadline:
-            self.suwayomi.session = None  # force a fresh handshake attempt
-            settings = await self.suwayomi.getServerSettings()
-            if settings:
+            self.suwayomi.session = None  # force a fresh handshake
+            if await self.suwayomi.getServerSettings():
                 return True
-            await asyncio.sleep(SERVER_POLL_INTERVAL)
+            await asyncio.sleep(POLL_INTERVAL)
         return False
 
     def show_setup_window(self, error: str | None = None):
-        window = SetupWindow(application=self, error=error)
-        window.present()
+        SetupWindow(application=self, error=error).present()
 
     def on_change_instance_action(self, *args):
-        win = self.props.active_window
-        self.stop_local_server()
-        if win:
+        self.server.stop()
+        if win := self.props.active_window:
+            for dialog in list(win.get_dialogs()):
+                dialog.force_close()
             win.close()
         self.show_setup_window()
 
-    def do_shutdown(self):
-        """Called right before the application exits."""
-        self.stop_local_server()
-        self.suwayomi.cache.close()
-        Adw.Application.do_shutdown(self)
-
     def on_about_action(self, *args):
-        about = Adw.AboutDialog(application_name='Kaghez',
-                                application_icon='com.rini.kaghez',
-                                developer_name='Riyan Parvez',
-                                version='0.8.8',
-                                translator_credits = _('translator-credits'),
-                                developers=['Riyan Parvez (rini)'],
-                                copyright='© 2026 Riyan Parvez')
-        about.present(self.props.active_window)
+        Adw.AboutDialog(
+            application_name=NAME,
+            application_icon='com.rini.kaghez',
+            developer_name='Riyan Parvez',
+            version=self.version,
+            # Translators: Replace "translator-credits" with your name/username.
+            translator_credits=_('translator-credits'),
+            developers=['Riyan Parvez (rini)'],
+            designers=['Riyan Parvez (rini)'],
+            copyright='© 2026 Riyan Parvez',
+            issue_url='https://github.com/riyaniii/Kaghez/issues',
+            license='GPL-3.0-or-later',
+            website='https://github.com/riyaniii/Kaghez',
+        ).present(self.props.active_window)
 
-    def on_preferences_action(self, widget, _):
-        preferences = KaghezPreferences()
-        preferences.present(self.props.active_window)
+    def on_preferences_action(self, *args):
+        KaghezPreferences().present(self.props.active_window)
 
-    def on_shortcuts_action(self, widget, _):
-        shortcuts = build_shortcuts()
-        shortcuts.present(self.props.active_window)
+    def on_shortcuts_action(self, *args):
+        build_shortcuts().present(self.props.active_window)
 
     def create_action(self, name, callback, shortcuts=None, parameter_type=None):
         action = Gio.SimpleAction.new(name, parameter_type)
-        action.connect("activate", callback)
+        action.connect('activate', callback)
         self.add_action(action)
         if shortcuts:
-            self.set_accels_for_action(f"app.{name}", shortcuts)
+            self.set_accels_for_action(f'app.{name}', shortcuts)
+
 
 def main(version):
-    app = KaghezApplication()
-    return app.run(sys.argv)
+    set_version(version)
+    return KaghezApplication(version).run(sys.argv)

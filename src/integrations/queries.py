@@ -58,7 +58,7 @@ query GetLibrary($first: Int, $after: Cursor) {
 
 GET_EXTENSIONS = gql("""
 query GetExtensions($first: Int, $after: Cursor) {
-  extensions(filter: { lang: { in: ["en", "all"] } }, first: $first, after: $after) {
+  extensions(first: $first, after: $after) {
     nodes {
       """ + EXTENSION_FULL_FIELDS + """
     }
@@ -335,6 +335,7 @@ GET_SERVER_SETTINGS = gql("""
 query GetServerSettings {
   settings {
     downloadAsCbz
+    downloadsPath
     extensionRepos
   }
 }
@@ -345,6 +346,7 @@ mutation SetServerSettings($settings: PartialSettingsTypeInput!) {
   setSettings(input: {settings: $settings}) {
     settings {
       downloadAsCbz
+      downloadsPath
       extensionRepos
     }
   }

@@ -45,6 +45,19 @@ template $KaghezPreferencesDialog : Adw.PreferencesDialog {
         sensitive: bind template.loaded;
         notify::active => $on_cbz_toggled();
       }
+
+      Adw.ActionRow location_row {
+        title: _("Download Location");
+        subtitle: _("Choose where downloaded chapters are stored");
+        activatable: true;
+        sensitive: bind template.loaded;
+        activated => $on_location_activated();
+
+        [suffix]
+        Gtk.Image {
+          icon-name: "go-next-symbolic";
+        }
+      }
     }
 
     Adw.PreferencesGroup {
@@ -70,7 +83,7 @@ template $KaghezPreferencesDialog : Adw.PreferencesDialog {
         title: _("Suwayomi Instance");
         subtitle: _("Switch between a local or remote server");
         activatable: true;
-        action-name: "app.change-instance";
+        action-name: "app.change_instance";
 
         [suffix]
         Gtk.Image {

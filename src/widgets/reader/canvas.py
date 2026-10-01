@@ -2,13 +2,15 @@ import asyncio
 import bisect
 import math
 
-from gi.repository import Gtk, Adw, Gio, Gsk, Graphene, GObject
+from gi.repository import Adw, Gio, Graphene, GObject, Gsk, Gtk
+
+from .base import ZOOM_MAX
 
 DEFAULT_RATIO = 0.68
-ZOOM_MIN = 0.5
-ZOOM_MAX = 4.0
+ZOOM_MIN = 0.5  # unlike the paged readers, the strip may shrink below the viewport
 PRELOAD = 0.5
 POOL_MAX = 6
+
 
 class Panel(Gtk.Stack):
     """One page: its picture, a spinner until it loads, or a chapter banner."""
@@ -19,6 +21,11 @@ class Panel(Gtk.Stack):
         super().__init__()
         self.page = None
         self.picture = Gtk.Picture(content_fit=Gtk.ContentFit.FILL)
+        self.banner_title = Gtk.Label(
+            css_classes=["title-1"],
+            halign=Gtk.Align.CENTER,
+            valign=Gtk.Align.CENTER,
+        )
         spinner = Adw.Spinner(
             halign=Gtk.Align.CENTER,
             valign=Gtk.Align.CENTER,
@@ -26,18 +33,9 @@ class Panel(Gtk.Stack):
             height_request=48,
         )
 
-        self.banner_title = Gtk.Label(css_classes=["title-1"])
-        banner = Gtk.Box(
-            orientation=Gtk.Orientation.VERTICAL,
-            spacing=6,
-            halign=Gtk.Align.CENTER,
-            valign=Gtk.Align.CENTER,
-        )
-        banner.append(self.banner_title)
-
         self.add_named(self.picture, "picture")
         self.add_named(spinner, "spinner")
-        self.add_named(banner, "banner")
+        self.add_named(self.banner_title, "banner")
         self.set_paintable(None)
 
     def set_paintable(self, paintable):
@@ -48,10 +46,15 @@ class Panel(Gtk.Stack):
         self.banner_title.set_label(chapter.name)
         self.set_visible_child_name("banner")
 
+
 class Canvas(Gtk.Widget, Gtk.Scrollable):
     __gtype_name__ = "KaghezCanvas"
 
     orientation = GObject.Property(type=Gtk.Orientation, default=Gtk.Orientation.VERTICAL)
+    hadjustment = GObject.Property(type=Gtk.Adjustment)
+    vadjustment = GObject.Property(type=Gtk.Adjustment)
+    hscroll_policy = GObject.Property(type=Gtk.ScrollablePolicy, default=Gtk.ScrollablePolicy.NATURAL)
+    vscroll_policy = GObject.Property(type=Gtk.ScrollablePolicy, default=Gtk.ScrollablePolicy.NATURAL)
 
     @GObject.Signal(arg_types=(int,))
     def page_changed(self, index):
@@ -69,16 +72,6 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
         self.cross = 0     # viewport size across the scroll axis, pages are fit to it
 
         self.zoom = 1.0
-        self.zoom_start = 1.0
-        self.zoom_center_x = 0.0
-        self.zoom_center_y = 0.0
-
-        self.hadj = None
-        self.hadj_handler = None
-        self.vadj = None
-        self.vadj_handler = None
-        self.hpolicy = Gtk.ScrollablePolicy.NATURAL
-        self.vpolicy = Gtk.ScrollablePolicy.NATURAL
 
         self.realized = {}  # index -> panel
         self.tasks = {}     # index -> image load
@@ -86,18 +79,9 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
         self.current_index = -1
         self.pending_index = None
 
-        zoom_gesture = Gtk.GestureZoom()
-        zoom_gesture.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
-        zoom_gesture.connect("begin", self.on_zoom_begin)
-        zoom_gesture.connect("scale-changed", self.on_zoom_scale_changed)
-        self.add_controller(zoom_gesture)
-
-        double_tap = Gtk.GestureClick()
-        double_tap.set_button(0)
-        double_tap.connect("pressed", self.on_double_tap)
-        self.add_controller(double_tap)
-
         self.connect("notify::orientation", self.on_orientation_changed)
+        self.connect("notify::hadjustment", self.on_adjustment_replaced)
+        self.connect("notify::vadjustment", self.on_adjustment_replaced)
 
     def do_dispose(self):
         for task in self.tasks.values():
@@ -106,17 +90,16 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
             child.unparent()
         super().do_dispose()
 
-
     @GObject.Property(type=Gtk.TextDirection, default=Gtk.TextDirection.LTR)
     def direction(self):
         return self.get_direction()
 
     @direction.setter
     def direction(self, value):
-        left = self.scroll_value(self.hadj) if self.hadj else 0
+        left = self.scroll_value(self.hadjustment) if self.hadjustment else 0
         self.set_direction(value)
-        if self.hadj:
-            self.set_scroll_value(self.hadj, left)
+        if self.hadjustment:
+            self.set_scroll_value(self.hadjustment, left)
         self.queue_allocate()
 
     @property
@@ -127,10 +110,9 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
     def mirrored(self):
         return not self.vertical and self.get_direction() == Gtk.TextDirection.RTL
 
-
     @property
     def main_adjustment(self):
-        return self.vadj if self.vertical else self.hadj
+        return self.vadjustment if self.vertical else self.hadjustment
 
     @property
     def content_width(self):
@@ -142,15 +124,14 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
 
     def scroll_value(self, adjustment):
         value = adjustment.get_value()
-        if adjustment is self.hadj and self.mirrored:
+        if adjustment is self.hadjustment and self.mirrored:
             return adjustment.get_upper() - adjustment.get_page_size() - value
         return value
 
     def set_scroll_value(self, adjustment, value):
-        if adjustment is self.hadj and self.mirrored:
+        if adjustment is self.hadjustment and self.mirrored:
             value = adjustment.get_upper() - adjustment.get_page_size() - value
         adjustment.set_value(value)
-
 
     def bind_store(self, store: Gio.ListStore):
         self.store = store
@@ -163,8 +144,8 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
         self.current_index = -1
         self.relayout()
         self.configure_adjustments()
-        self.set_scroll_value(self.hadj, 0)
-        self.set_scroll_value(self.vadj, 0)
+        self.set_scroll_value(self.hadjustment, 0)
+        self.set_scroll_value(self.vadjustment, 0)
         self.queue_allocate()
 
     def scroll_to_index(self, index: int):
@@ -175,15 +156,22 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
         if 0 <= index < len(self.starts):
             self.set_scroll_value(self.main_adjustment, self.starts[index] * self.zoom)
 
-    def on_orientation_changed(self, *_):
+    def scroll_by(self, amount):
+        """Scroll along the strip, positive is towards the end of the chapter."""
+        adjustment = self.main_adjustment
+        self.set_scroll_value(adjustment, self.scroll_value(adjustment) + amount)
+
+    def scroll_page(self, direction):
+        self.scroll_by(direction * self.main_adjustment.get_page_increment())
+
+    def on_orientation_changed(self, canvas, pspec):
         if self.cross == 0:  # nothing is laid out yet
             return
         self.pending_index = self.current_index
         self.cross = 0
-        self.set_scroll_value(self.hadj, 0)
-        self.set_scroll_value(self.vadj, 0)
+        self.set_scroll_value(self.hadjustment, 0)
+        self.set_scroll_value(self.vadjustment, 0)
         self.queue_allocate()
-
 
     def relayout(self):
         self.starts = []
@@ -236,7 +224,6 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
             self.current_index = index
             self.emit("page-changed", index)
 
-
     def update_realized(self):
         first, last = self.visible_range()
         wanted = set(range(first, last + 1))
@@ -244,9 +231,8 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
         for index in list(self.realized):
             if index not in wanted:
                 self.unrealize_panel(index)
-        for index in sorted(wanted):
-            if index not in self.realized:
-                self.realize_panel(index)
+        for index in sorted(wanted - self.realized.keys()):
+            self.realize_panel(index)
 
     def realize_panel(self, index):
         if self.pool:
@@ -287,8 +273,6 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
     async def load_page(self, index, page):
         try:
             paintable = await self.suwayomi.getPaintable(page.url)
-        except asyncio.CancelledError:
-            raise
         except Exception:
             return
         if paintable:
@@ -300,8 +284,8 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
         self.set_ratio(index, paintable.get_intrinsic_aspect_ratio() or DEFAULT_RATIO)
 
     def place_panels(self, width, height):
-        left = self.scroll_value(self.hadj) / self.zoom
-        top = self.scroll_value(self.vadj) / self.zoom
+        left = self.scroll_value(self.hadjustment) / self.zoom
+        top = self.scroll_value(self.vadjustment) / self.zoom
 
         offset_x = self.centering_offset(self.content_width, self.zoom, width)
         offset_y = self.centering_offset(self.content_height, self.zoom, height)
@@ -320,7 +304,6 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
 
             transform = Gsk.Transform.new().translate(Graphene.Point().init(x, y))
             panel.allocate(math.ceil(panel_width), math.ceil(panel_height), -1, transform)
-
 
     def centering_offset(self, content_size, zoom, viewport_size):
         return max(0.0, (viewport_size / zoom - content_size) / 2)
@@ -341,38 +324,22 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
             anchor_x = self.get_width() - anchor_x
 
         left = self.anchored_scroll(
-            self.hadj, self.content_width, self.get_width(), anchor_x, old_zoom, new_zoom
+            self.hadjustment, self.content_width, self.get_width(), anchor_x, old_zoom, new_zoom
         )
         top = self.anchored_scroll(
-            self.vadj, self.content_height, self.get_height(), anchor_y, old_zoom, new_zoom
+            self.vadjustment, self.content_height, self.get_height(), anchor_y, old_zoom, new_zoom
         )
 
         self.zoom = new_zoom
         self.configure_adjustments()
-        self.set_scroll_value(self.hadj, left)
-        self.set_scroll_value(self.vadj, top)
+        self.set_scroll_value(self.hadjustment, left)
+        self.set_scroll_value(self.vadjustment, top)
         self.queue_allocate()
-
-    def on_zoom_begin(self, gesture, sequence):
-        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
-        self.zoom_start = self.zoom
-        ok, x, y = gesture.get_bounding_box_center()
-        if ok:
-            self.zoom_center_x = x
-            self.zoom_center_y = y
-
-    def on_zoom_scale_changed(self, gesture, scale):
-        self.set_zoom_anchored(self.zoom_start * scale, self.zoom_center_x, self.zoom_center_y)
-
-    def on_double_tap(self, gesture, n_press, x, y):
-        if n_press == 2:
-            self.set_zoom_anchored(1.0, x, y)
-
 
     def scroll_fractions(self):
         return (
-            self.fraction(self.hadj, self.content_width),
-            self.fraction(self.vadj, self.content_height),
+            self.fraction(self.hadjustment, self.content_width),
+            self.fraction(self.vadjustment, self.content_height),
         )
 
     def fraction(self, adjustment, content_size):
@@ -383,12 +350,35 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
     def restore_scroll_fractions(self, fractions):
         fraction_x, fraction_y = fractions
         self.configure_adjustments()
-        self.set_scroll_value(self.hadj, fraction_x * self.content_width * self.zoom)
-        self.set_scroll_value(self.vadj, fraction_y * self.content_height * self.zoom)
+        self.set_scroll_value(self.hadjustment, fraction_x * self.content_width * self.zoom)
+        self.set_scroll_value(self.vadjustment, fraction_y * self.content_height * self.zoom)
 
-    def on_scrolled(self, *_):
+    def on_scrolled(self, adjustment):
         self.queue_allocate()
 
+    def on_adjustment_replaced(self, canvas, pspec):
+        if adjustment := self.get_property(pspec.name):
+            adjustment.connect("value-changed", self.on_scrolled)
+        self.configure_adjustments()
+
+    def configure_adjustments(self):
+        self.configure_adjustment(self.hadjustment, self.content_width, self.get_width(), self.mirrored)
+        self.configure_adjustment(self.vadjustment, self.content_height, self.get_height(), False)
+
+    def configure_adjustment(self, adjustment, content_size, viewport_size, flipped):
+        if adjustment is None:
+            return
+        upper = max(content_size * self.zoom, viewport_size)
+        if (
+            abs(adjustment.get_upper() - upper) < 0.01
+            and abs(adjustment.get_page_size() - viewport_size) < 0.01
+        ):
+            return
+        value = adjustment.get_value()
+        if flipped:
+            old_end = adjustment.get_upper() - adjustment.get_page_size()
+            value = upper - viewport_size - (old_end - value)
+        adjustment.configure(value, 0.0, upper, 40.0, viewport_size * 0.9, viewport_size)
 
     def do_measure(self, orientation, for_size):
         return 0, 0, -1, -1
@@ -413,67 +403,3 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
         self.update_current_index()
         self.update_realized()
         self.place_panels(width, height)
-
-
-    @GObject.Property(type=Gtk.Adjustment, default=None)
-    def hadjustment(self):
-        return self.hadj
-
-    @hadjustment.setter
-    def hadjustment(self, adjustment):
-        if self.hadj_handler is not None:
-            self.hadj.disconnect(self.hadj_handler)
-            self.hadj_handler = None
-        self.hadj = adjustment
-        if adjustment is not None:
-            self.hadj_handler = adjustment.connect("value-changed", self.on_scrolled)
-        self.configure_adjustments()
-
-    @GObject.Property(type=Gtk.Adjustment, default=None)
-    def vadjustment(self):
-        return self.vadj
-
-    @vadjustment.setter
-    def vadjustment(self, adjustment):
-        if self.vadj_handler is not None:
-            self.vadj.disconnect(self.vadj_handler)
-            self.vadj_handler = None
-        self.vadj = adjustment
-        if adjustment is not None:
-            self.vadj_handler = adjustment.connect("value-changed", self.on_scrolled)
-        self.configure_adjustments()
-
-    @GObject.Property(type=Gtk.ScrollablePolicy, default=Gtk.ScrollablePolicy.NATURAL)
-    def hscroll_policy(self):
-        return self.hpolicy
-
-    @hscroll_policy.setter
-    def hscroll_policy(self, value):
-        self.hpolicy = value
-
-    @GObject.Property(type=Gtk.ScrollablePolicy, default=Gtk.ScrollablePolicy.NATURAL)
-    def vscroll_policy(self):
-        return self.vpolicy
-
-    @vscroll_policy.setter
-    def vscroll_policy(self, value):
-        self.vpolicy = value
-
-    def configure_adjustments(self):
-        self.configure_adjustment(self.hadj, self.content_width, self.get_width(), self.mirrored)
-        self.configure_adjustment(self.vadj, self.content_height, self.get_height(), False)
-
-    def configure_adjustment(self, adjustment, content_size, viewport_size, flipped):
-        if adjustment is None:
-            return
-        upper = max(content_size * self.zoom, viewport_size)
-        if (
-            abs(adjustment.get_upper() - upper) < 0.01
-            and abs(adjustment.get_page_size() - viewport_size) < 0.01
-        ):
-            return
-        value = adjustment.get_value()
-        if flipped:
-            old_end = adjustment.get_upper() - adjustment.get_page_size()
-            value = upper - viewport_size - (old_end - value)
-        adjustment.configure(value, 0.0, upper, 40.0, viewport_size * 0.9, viewport_size)

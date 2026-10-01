@@ -1,43 +1,22 @@
 import asyncio
-from dataclasses import dataclass
-from gi.repository import Gtk, GObject, Gio
+from gi.repository import Gio, GLib, GObject, Gtk
 
 from ...integrations import models
-from .base import ReaderBase
+from .base import ReaderBase, adjacent_chapter
 from .canvas import Canvas
 
-PREFETCH_PAGES = 5
+PREFETCH_PAGES = 6
 BANNER_RATIO = 2.2
-
+SCROLL_SPEED = 800
 
 class TransitionPage(models.Page):
-    """Synthetic page announcing the chapter that follows it in the strip."""
-
     def __init__(self, chapter):
-        super().__init__()
+        super().__init__(index=-1, chapter_id=chapter.id)
         self.chapter = chapter
-
-
-@dataclass
-class ChapterRange:
-    """Where one chapter's pages sit within the continuous store."""
-
-    model: models.Chapter
-    start: int
-    count: int
-
-    @property
-    def end(self):
-        return self.start + self.count
 
 
 @Gtk.Template(resource_path='/com/rini/kaghez/reader/webtoon.ui')
 class WebtoonReader(ReaderBase):
-    """Webtoon-style reader that scrolls seamlessly across chapter
-    boundaries. Keeps its own continuous store spanning as many chapters as
-    are currently loaded, unlike the other readers which only ever see one
-    chapter at a time. A banner page announces each boundary."""
-
     __gtype_name__ = "KaghezWebtoonReader"
 
     orientation = GObject.Property(type=Gtk.Orientation, default=Gtk.Orientation.VERTICAL)
@@ -49,21 +28,19 @@ class WebtoonReader(ReaderBase):
         self.current_position = 0
 
         self.store = Gio.ListStore(item_type=models.Page)
-        self.chapters = []  # ChapterRange, in store order
-        self.loading_before = False
-        self.loading_after = False
+        self.chapters = []  # loaded chapter models, in strip order
+        self.loading = set()  # which ends of the strip are being extended: "before", "after"
+
+        self.scroll_direction = 0  # -1, 0 or 1 while an arrow key is held
+        self.tick_id = 0
+        self.last_frame_time = 0
 
         self.canvas.bind_store(self.store)
-        self.bind_property(
-            "orientation", self.canvas, "orientation", GObject.BindingFlags.SYNC_CREATE
-        )
-        self.bind_property(
-            "direction", self.canvas, "direction", GObject.BindingFlags.SYNC_CREATE
-        )
+        for name in ("orientation", "direction"):
+            self.bind_property(name, self.canvas, name, GObject.BindingFlags.SYNC_CREATE)
         self.canvas.connect("page-changed", self.on_page_changed)
 
         self.connect("notify::chapter-model", self.on_chapter_model_changed)
-
 
     def bind_store(self, store: Gio.ListStore):
         pass
@@ -74,116 +51,122 @@ class WebtoonReader(ReaderBase):
 
     @position.setter
     def position(self, value):
-        page_count = self.chapter_model.page_count if self.chapter_model else 0
-        self.current_position = max(0, min(value, page_count - 1)) if page_count else 0
-        index = self.global_index(self.chapter_model, self.current_position)
+        count = self.page_count
+        self.current_position = max(0, min(value, count - 1)) if count else 0
+        index = self.store_index(self.chapter_model, self.current_position)
         if index is not None:
             self.canvas.scroll_to_index(index)
 
+    @property
+    def zoom(self):
+        return self.canvas.zoom
 
-    def on_chapter_model_changed(self, reader, param):
+    def zoom_to(self, value, x, y):
+        self.canvas.set_zoom_anchored(value, x, y)
+
+    def scroll_page(self, direction):
+        self.canvas.scroll_page(direction)
+
+    def start_scrolling(self, direction):
+        self.scroll_direction = direction
+        if not self.tick_id:
+            self.last_frame_time = self.get_frame_clock().get_frame_time()
+            self.tick_id = self.add_tick_callback(self.on_tick)
+
+    def stop_scrolling(self):
+        self.scroll_direction = 0
+
+    def on_tick(self, widget, frame_clock):
+        frame_time = frame_clock.get_frame_time()
+        elapsed = (frame_time - self.last_frame_time) / GLib.USEC_PER_SEC
+        self.last_frame_time = frame_time
+
+        if not self.scroll_direction or not self.get_mapped():
+            self.scroll_direction = 0
+            self.tick_id = 0
+            return GLib.SOURCE_REMOVE
+
+        self.canvas.scroll_by(self.scroll_direction * SCROLL_SPEED * elapsed)
+        return GLib.SOURCE_CONTINUE
+
+    def find_chapter(self, chapter_id):
+        return next((chapter for chapter in self.chapters if chapter.id == chapter_id), None)
+
+    def store_index(self, chapter, position):
+        if chapter is None:
+            return None
+        return next(
+            (
+                index
+                for index, page in enumerate(self.store)
+                if page.chapter_id == chapter.id and page.index == position
+            ),
+            None,
+        )
+
+    def on_chapter_model_changed(self, reader, pspec):
         chapter = self.chapter_model
-        if chapter is None or self.find_range(chapter) is not None:
+        if chapter is None or self.find_chapter(chapter.id) is not None:
             return
         self.chapters = []
         self.store.remove_all()
-        self.queue_chapter_load(chapter, prepend=False)
-
-    def find_range(self, chapter):
-        for chapter_range in self.chapters:
-            if chapter_range.model.id == chapter.id:
-                return chapter_range
-        return None
-
-    def range_at(self, index):
-        for chapter_range in self.chapters:
-            if chapter_range.start <= index < chapter_range.end:
-                return chapter_range
-        return None
-
-    def global_index(self, chapter, position):
-        chapter_range = self.find_range(chapter)
-        return None if chapter_range is None else chapter_range.start + position
-
-    def adjacent_chapter(self, chapter, direction):
-        found, index = self.manga_model.chapters.find(chapter)
-        if not found:
-            return None
-        index += direction
-        if 0 <= index < self.manga_model.chapters.get_n_items():
-            return self.manga_model.chapters.get_item(index)
-        return None
-
-
-    def queue_chapter_load(self, chapter, prepend: bool):
-        asyncio.create_task(self.load_chapter_pages(chapter, prepend))
+        asyncio.create_task(self.load_chapter_pages(chapter, prepend=False))
 
     async def load_chapter_pages(self, chapter, prepend: bool):
-        if prepend:
-            self.loading_before = True
-        else:
-            self.loading_after = True
+        side = "before" if prepend else "after"
+        self.loading.add(side)
         try:
             pages = await self.suwayomi.getChapterPages(chapter.id)
         except Exception:
             return
         finally:
-            if prepend:
-                self.loading_before = False
-            else:
-                self.loading_after = False
+            self.loading.discard(side)
 
         banner = [TransitionPage(chapter)] if self.chapters else []
         block = banner + pages
 
         if prepend:
-            for chapter_range in self.chapters:
-                chapter_range.start += len(block)
-            self.chapters.insert(0, ChapterRange(chapter, len(banner), len(pages)))
-            self.store.splice(0, 0, block)
+            self.chapters.insert(0, chapter)
             banner_index = 0
         else:
-            start = self.store.get_n_items() + len(banner)
-            self.chapters.append(ChapterRange(chapter, start, len(pages)))
-            self.store.splice(self.store.get_n_items(), 0, block)
-            banner_index = start - 1
+            self.chapters.append(chapter)
+            banner_index = self.store.get_n_items()
+        self.store.splice(banner_index, 0, block)
 
         if banner:
             self.canvas.set_ratio(banner_index, BANNER_RATIO)
 
         self.position = self.current_position
 
-    def maybe_prefetch(self, index):
+    def maybe_prefetch(self, page):
         if not self.chapters:
             return
 
         leading, trailing = self.chapters[0], self.chapters[-1]
 
-        if not self.loading_before and index - leading.start < PREFETCH_PAGES:
-            previous_chapter = self.adjacent_chapter(leading.model, -1)
-            if previous_chapter:
-                self.queue_chapter_load(previous_chapter, prepend=True)
+        near_start = page.chapter_id == leading.id and page.index < PREFETCH_PAGES
+        if near_start and "before" not in self.loading:
+            if previous := adjacent_chapter(self.manga_model, leading, -1):
+                asyncio.create_task(self.load_chapter_pages(previous, prepend=True))
 
-        if not self.loading_after and trailing.end - index <= PREFETCH_PAGES:
-            next_chapter = self.adjacent_chapter(trailing.model, 1)
-            if next_chapter:
-                self.queue_chapter_load(next_chapter, prepend=False)
-
+        near_end = page.chapter_id == trailing.id and trailing.page_count - page.index <= PREFETCH_PAGES
+        if near_end and "after" not in self.loading:
+            if following := adjacent_chapter(self.manga_model, trailing, 1):
+                asyncio.create_task(self.load_chapter_pages(following, prepend=False))
 
     def on_page_changed(self, canvas, index):
-        self.maybe_prefetch(index)
+        page = self.store.get_item(index)
+        self.maybe_prefetch(page)
 
-        chapter_range = self.range_at(index)
-        if chapter_range is None:  # sitting on a banner page, between chapters
+        if page.index < 0:  # sitting on a banner page, between chapters
             return
 
-        if chapter_range.model.id != self.chapter_model.id:
+        if page.chapter_id != self.chapter_model.id:
             self.mark_chapter_read(self.chapter_model)
-            self.chapter_model = chapter_range.model
+            self.chapter_model = self.find_chapter(page.chapter_id)
 
-        position = index - chapter_range.start
-        if position != self.current_position:
-            self.current_position = position
+        if page.index != self.current_position:
+            self.current_position = page.index
             self.notify("position")
 
     def mark_chapter_read(self, chapter):

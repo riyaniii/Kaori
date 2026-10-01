@@ -45,6 +45,7 @@
 
     <file alias="download/page.ui">ui/download/page.ui</file>
     <file alias="download/row.ui">ui/download/row.ui</file>
+    <file alias="download/dialog.ui">ui/download/dialog.ui</file>
 
     <file alias="containers/manga_grid.ui">ui/containers/manga_grid.ui</file>
     <file alias="containers/row.ui">ui/containers/row.ui</file>
@@ -57,3 +58,4 @@
 
   </gresource>
 </gresources>
+

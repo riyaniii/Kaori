@@ -9,7 +9,7 @@
 		<key name="suwayomi-url" type="s">
 			<default>''</default>
 			<summary>Suwayomi server URL</summary>
-			<description>The URL of the Suwayomi server Kaghez connects to. Only meaningful when suwayomi-mode is "remote".</description>
+			<description>The URL of the Suwayomi server the app connects to. Only meaningful when suwayomi-mode is "remote".</description>
 		</key>
 	</schema>
 </schemalist>
