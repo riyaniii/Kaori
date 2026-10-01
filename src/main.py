@@ -20,7 +20,7 @@ from .widgets import KaghezWindow, build_shortcuts
 from .widgets.preferences import KaghezPreferences
 from .widgets.setup import SetupWindow
 
-JAR_NAME = 'Suwayomi-Server-v2.3.2363.jar'
+JAR_NAME = 'Suwayomi-Server.jar'
 LOCAL_URL = 'http://localhost:4567'
 READY_TIMEOUT = 10
 POLL_INTERVAL = 0.5
