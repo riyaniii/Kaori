@@ -8,11 +8,11 @@ from ...integrations import models
 CONTENT_LABELS = {"synopsis", "summary", "description", "plot", "overview", "story"}
 
 LABEL_LINE = re.compile(
-    r'^(?:#{1,6}\s*)?'                      # optional markdown header hashes
-    r'(?:\*{1,2}|_{1,2})?'                  # optional opening bold/italic marker
-    r'([A-Za-z][A-Za-z \-\'&/]{1,40}?)'     # the label text itself
-    r'(?:\*{1,2}|_{1,2})?'                  # optional closing bold/italic marker
-    r'\s*:\s*(.*)$'                         # colon + rest of line
+    r'^(?:#{1,6}\s*)?'
+    r'(?:\*{1,2}|_{1,2})?'
+    r'([A-Za-z][A-Za-z \-\'&/]{1,40}?)'
+    r'(?:\*{1,2}|_{1,2})?'
+    r'\s*:\s*(.*)$'
 )
 BULLET_LINE = re.compile(r'^\s*(?:[•\-\*]|\d+[\.\)])\s+')
 SOURCE_LINE = re.compile(r'^\(.*\)$')
@@ -61,10 +61,10 @@ def strip_labels(lines: list[str]) -> str:
             cleaned.append(rest)
     return '\n'.join(cleaned).strip()
 
-
 def extract_meat(description: str) -> str:
     paragraphs = split_paragraphs(description)
-    candidates = []
+    labeled = []      # paragraphs explicitly marked Synopsis/Summary/etc.
+    unlabeled = []    # plain prose paragraphs with no label
     fallback_chunks = []
 
     for para in paragraphs:
@@ -77,21 +77,23 @@ def extract_meat(description: str) -> str:
         if first_label is None:
             cleaned = strip_labels(lines)
             if cleaned:
-                candidates.append(cleaned)
+                unlabeled.append(cleaned)
             continue
 
         if first_label in CONTENT_LABELS:
             cleaned = strip_labels([first_rest] + lines[1:])
             if cleaned:
-                candidates.append(cleaned)
+                labeled.append(cleaned)
             continue
 
         cleaned = strip_labels(lines)
         if cleaned:
             fallback_chunks.append(cleaned)
 
-    if candidates:
-        return max(candidates, key=len)
+    if labeled:
+        return max(labeled, key=len)
+    if unlabeled:
+        return max(unlabeled, key=len)
     if fallback_chunks:
         return max(fallback_chunks, key=len)
     return strip_labels(description.strip().split('\n'))
