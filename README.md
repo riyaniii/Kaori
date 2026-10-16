@@ -17,7 +17,7 @@ Kaori connects to/runs [Suwayomi](https://github.com/Suwayomi/Suwayomi-Server) a
 
 <p align="start">
   <a href="https://www.buymeacoffee.com/riyanparvez">
-    <img src="assets/badges/bmc.svg" height="80">
+    <img src="assets/badges/bmc.svg" height="70">
   </a>
 </p>
 
