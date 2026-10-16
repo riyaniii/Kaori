@@ -1,6 +1,5 @@
 import asyncio
 import os
-import shutil
 import subprocess
 import sys
 import time
@@ -61,7 +60,6 @@ class KaoriApplication(Adw.Application):
         self.suwayomi = Suwayomi()
         self.server: subprocess.Popen | None = None
         self.server_log = None
-        self.server_log_path: str | None = None
 
         self.create_action('quit', lambda *_: self.quit(), ['<control>q'])
         self.create_action('preferences', self.on_preferences_action, ['<control>comma'])
@@ -90,29 +88,13 @@ class KaoriApplication(Adw.Application):
         Adw.Application.do_shutdown(self)
 
     def start_server(self) -> None:
+        
+        
         log_dir = os.path.join(GLib.get_user_cache_dir(), 'kaori')
         os.makedirs(log_dir, exist_ok=True)
-        self.server_log_path = os.path.join(log_dir, 'server.log')
-        java = shutil.which('java')
-        print('[kaori] launching local Suwayomi server')
-        print(f'[kaori]   command: {" ".join(SERVER_CMD)}')
-        print(f'[kaori]   jar:     {JAR} exists={os.path.exists(JAR)}')
-        print(f'[kaori]   java:    {java}')
-        print(f'[kaori]   log:     {self.server_log_path}')
-        self.server_log = open(self.server_log_path, 'ab')
+        self.server_log = open(os.path.join(log_dir, 'server.log'), 'ab')
         self.server = subprocess.Popen(
             SERVER_CMD, stdout=self.server_log, stderr=subprocess.STDOUT)
-        print(f'[kaori]   pid:     {self.server.pid}')
-
-    def server_log_tail(self, lines: int = 40) -> str:
-        if not self.server_log_path:
-            return ''
-        try:
-            with open(self.server_log_path, 'rb') as handle:
-                rows = handle.read().splitlines()
-        except OSError:
-            return ''
-        return b'\n'.join(rows[-lines:]).decode('utf-8', 'replace')
 
     def stop_server(self) -> None:
         if self.server:
@@ -126,15 +108,11 @@ class KaoriApplication(Adw.Application):
     async def launch_or_setup(self, mode: str, url: str) -> None:
         try:
             if not await self.launch(mode, url):
-                if mode == 'local' and self.server_log_path:
-                    self.show_setup_window(
-                        error=("The local server didn't start. See the log:\n"
-                               f"{self.server_log_path}"))
-                else:
-                    self.show_setup_window(
-                        error="Couldn't reconnect. Check your setup and try again.")
+                self.show_setup_window(
+                    error="Couldn't reconnect. Check your setup and try again.")
         except Exception as e:
-            print(f'[kaori] failed to start: {e!r}')
+            
+            
             self.stop_server()
             self.show_setup_window(error=f"Failed to start: {e}")
         finally:
@@ -161,12 +139,6 @@ class KaoriApplication(Adw.Application):
         deadline = loop.time() + READY_TIMEOUT
         while loop.time() < deadline:
             if self.server and self.server.poll() is not None:
-                print(f'[kaori] server exited early with code {self.server.returncode}')
-                tail = self.server_log_tail()
-                if tail:
-                    print('[kaori] ---- server.log (tail) ----')
-                    print(tail)
-                    print('[kaori] ----------------------------')
                 return False
             try:
                 if await self.suwayomi.getServerSettings():
@@ -175,7 +147,6 @@ class KaoriApplication(Adw.Application):
                 
                 pass
             await asyncio.sleep(POLL_INTERVAL)
-        print(f'[kaori] server did not become ready within {READY_TIMEOUT}s')
         return False
 
     def show_setup_window(self, error: str | None = None) -> None:
