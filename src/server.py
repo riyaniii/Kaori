@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 
 from gi.repository import GLib
@@ -21,6 +22,7 @@ class LocalServer:
     def __init__(self) -> None:
         self.process: subprocess.Popen | None = None
         self.log = None
+        self.log_path: str | None = None
 
     @property
     def running(self) -> bool:
@@ -36,9 +38,26 @@ class LocalServer:
     def start(self) -> None:
         log_dir = os.path.join(GLib.get_user_cache_dir(), 'kaori')
         os.makedirs(log_dir, exist_ok=True)
-        self.log = open(os.path.join(log_dir, 'server.log'), 'ab')
+        self.log_path = os.path.join(log_dir, 'server.log')
+        print('[kaori] launching local Suwayomi server')
+        print(f'[kaori]   command: {" ".join(COMMAND)}')
+        print(f'[kaori]   jar:     {JAR} exists={os.path.exists(JAR)}')
+        print(f'[kaori]   java:    {shutil.which("java")}')
+        print(f'[kaori]   log:     {self.log_path}')
+        self.log = open(self.log_path, 'ab')
         self.process = subprocess.Popen(
             COMMAND, stdout=self.log, stderr=subprocess.STDOUT)
+        print(f'[kaori]   pid:     {self.process.pid}')
+
+    def log_tail(self, lines: int = 40) -> str:
+        if not self.log_path:
+            return ''
+        try:
+            with open(self.log_path, 'rb') as handle:
+                rows = handle.read().splitlines()
+        except OSError:
+            return ''
+        return b'\n'.join(rows[-lines:]).decode('utf-8', 'replace')
 
     def stop(self) -> None:
         if self.process:
