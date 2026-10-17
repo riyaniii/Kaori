@@ -4,7 +4,7 @@ Mirrors src/kaori.in's frozen-executable behaviour, but as a committed script
 PyInstaller can analyse. It:
 
   1. points GI_TYPELIB_PATH at the bundled typelibs (so gi can resolve Gtk/Adw),
-  2. points PATH/JAVA_HOME at the bundled Temurin JRE (so Suwayomi starts
+  2. points PATH/JAVA_HOME at the bundled Azul Zulu JRE (so Suwayomi starts
      without a system Java),
   3. points GSETTINGS_SCHEMA_DIR at the bundled schema,
   4. registers the bundled gresource,
@@ -19,7 +19,9 @@ Data layout inside the frozen bundle (PyInstaller 6 onedir):
     share/glib-2.0/schemas/
     share/locale/<lang>/LC_MESSAGES/kaori.mo
     girepository-1.0/*.typelib
-    jre/bin/java
+    runtime/bin/java                  <- not named "jre": a directory called
+                                         jre next to the jar breaks Suwayomi's
+                                         GraphQL class scanning
     Suwayomi-Server.jar               <- matches main.py's JAR path derivation
 """
 
@@ -72,7 +74,7 @@ def main() -> int:
     pkgdatadir = os.path.join(base, "share", "kaori")
     localedir = os.path.join(base, "share", "locale")
     schemadir = os.path.join(base, "share", "glib-2.0", "schemas")
-    jre_bin = os.path.join(base, "jre", "bin")
+    jre_bin = os.path.join(base, "runtime", "bin")
 
     # Prefer the bundled JRE so the Suwayomi server can be started out of the box.
     if os.path.isdir(jre_bin):
