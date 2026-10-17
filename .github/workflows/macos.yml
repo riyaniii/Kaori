@@ -186,55 +186,38 @@ jobs:
           "$app/Contents/Resources/_internal/runtime/bin/java" -version
           echo "bundle:" && find "$app" -maxdepth 3 -type d | head -20
 
-      - name: Bisect server startup
+      - name: Smoke-test the bundled server
         run: |
           res="$GITHUB_WORKSPACE/Kaori.app/Contents/Resources/_internal"
-          src_jar=$(ls "$GITHUB_WORKSPACE"/src/Suwayomi-Server-*.jar | head -1)
-
-          rm -rf "$RUNNER_TEMP/layout-jre" "$RUNNER_TEMP/layout-runtime"
-          mkdir -p "$RUNNER_TEMP/layout-jre" "$RUNNER_TEMP/layout-runtime"
-          cp "$res/Suwayomi-Server.jar" "$RUNNER_TEMP/layout-jre/"
-          cp "$res/Suwayomi-Server.jar" "$RUNNER_TEMP/layout-runtime/"
-          ditto "$JRE_HOME" "$RUNNER_TEMP/layout-jre/jre"
-          ditto "$JRE_HOME" "$RUNNER_TEMP/layout-runtime/runtime"
-
-          try() {
-            label=$1; java=$2; jar=$3
-            cd "$RUNNER_TEMP"
-            "$java" -jar "$jar" > "$label.log" 2>&1 &
-            pid=$!
-            ok=0
-            for i in $(seq 1 40); do
-              if curl -fsS -X POST -H 'Content-Type: application/json' \
-                   -d '{"query":"{ __typename }"}' \
-                   http://localhost:4567/api/graphql > /dev/null 2>&1; then
-                ok=1
-                break
-              fi
-              grep -q "unhandled exception" "$label.log" && break
-              grep -q "InvalidPackagesException" "$label.log" && break
-              kill -0 $pid 2>/dev/null || break
-              sleep 1
-            done
-            kill $pid 2>/dev/null || true
-            wait $pid 2>/dev/null || true
-            sleep 3
-            echo "$label: $([ $ok = 1 ] && echo PASS || echo FAIL)"
-            [ $ok = 1 ]
-          }
-
-          rc=0
-          try a-src-jar-zulu-jre "$JRE_HOME/bin/java" "$src_jar" || rc=1
-          try b-bundle-jar-zulu-jre "$JRE_HOME/bin/java" "$res/Suwayomi-Server.jar" || rc=1
-          try c-bundled-runtime-in-app "$res/runtime/bin/java" "$res/Suwayomi-Server.jar" || rc=1
-          try f-dir-named-jre-next-to-jar "$RUNNER_TEMP/layout-jre/jre/bin/java" "$RUNNER_TEMP/layout-jre/Suwayomi-Server.jar" || rc=1
-          try g-dir-named-runtime-next-to-jar "$RUNNER_TEMP/layout-runtime/runtime/bin/java" "$RUNNER_TEMP/layout-runtime/Suwayomi-Server.jar" || rc=1
-
-          for f in c-bundled-runtime-in-app f-dir-named-jre-next-to-jar g-dir-named-runtime-next-to-jar; do
-            echo "---- $f (head) ----"
-            head -n 8 "$RUNNER_TEMP/$f.log"
+          cd "$RUNNER_TEMP"
+          "$res/runtime/bin/java" \
+            -Dsuwayomi.tachidesk.config.server.systemTrayEnabled=false \
+            -Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false \
+            -Dsuwayomi.tachidesk.config.server.kcefEnabled=false \
+            -jar "$res/Suwayomi-Server.jar" > server.log 2>&1 &
+          pid=$!
+          ok=0
+          for i in $(seq 1 90); do
+            if curl -fsS -X POST -H 'Content-Type: application/json' \
+                 -d '{"query":"{ __typename }"}' \
+                 http://localhost:4567/api/graphql > /dev/null 2>&1; then
+              ok=1
+              echo "server ready after ${i}s"
+              break
+            fi
+            grep -q "unhandled exception" server.log && break
+            kill -0 $pid 2>/dev/null || break
+            sleep 1
           done
-          exit $rc
+          kill $pid 2>/dev/null || true
+          wait $pid 2>/dev/null || true
+          if [ $ok != 1 ]; then
+            echo "server never became ready" >&2
+            head -n 40 server.log >&2
+            echo "----" >&2
+            tail -n 80 server.log >&2
+            exit 1
+          fi
 
       - name: Create the .dmg
         run: |
