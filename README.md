@@ -80,6 +80,8 @@ You can install Kaori as flatpak on Linux or a .DMG on macOS
   </tr>
 </table>
 
+<img src="assets/Screenshots/macos_reader.png" width="100%">
+
 ## Code of Conduct
 This project follows the [GNOME Code of Conduct](https://conduct.gnome.org/)
 

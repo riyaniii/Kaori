@@ -1,8 +1,7 @@
-import asyncio
-
 from gi.repository import Gtk, Adw, Gio, GLib
 from ..manga import MangaCard
 from ...integrations import models
+from ...integrations.suwayomi import watch
 
 @Gtk.Template(resource_path='/io/github/riyaniii/Kaori/containers/manga_grid.ui')
 class MangaGrid(Adw.BreakpointBin):
@@ -14,6 +13,7 @@ class MangaGrid(Adw.BreakpointBin):
         super().__init__(**kwargs)
 
         self.search_text = ""
+        self.category_id = None
         self.suwayomi = Gio.Application.get_default().suwayomi
 
         self.store = Gio.ListStore(item_type=models.Manga)
@@ -31,17 +31,33 @@ class MangaGrid(Adw.BreakpointBin):
         factory.connect('unbind', self.on_unbind)
         self.grid.set_factory(factory)
 
+        watch(self, self.suwayomi, self.refilter, "notify::category-revision")
+
     def bind_store(self, store: Gio.ListStore):
         self.store = store
         self.filter_model.set_model(store)
 
+    def refilter(self):
+        self.custom_filter.changed(Gtk.FilterChange.DIFFERENT)
+
     def filter_func(self, item):
+        if self.category_id is not None:
+            members = self.suwayomi.category_members.get(self.category_id, set())
+            if item.id not in members:
+                return False
         title = (item.title or "").lower()
         return self.search_text in title
 
     def set_search_text(self, text: str):
         self.search_text = text.strip().lower()
-        self.custom_filter.changed(Gtk.FilterChange.DIFFERENT)
+        self.refilter()
+
+    def set_category(self, category_id: int):
+        if category_id < 0:
+            self.category_id = None
+        else:
+            self.category_id = category_id
+        self.refilter()
 
     def on_setup(self, factory, list_item):
         child = MangaCard()
@@ -52,9 +68,7 @@ class MangaGrid(Adw.BreakpointBin):
         item = list_item.get_item()
         card = list_item.get_child()
         card.model = item
-
-        if item.paintable is None and item.thumbnail_url:
-            card.thumbnail_task = asyncio.create_task(self.load_thumbnail(item))
+        card.thumbnail_task = self.suwayomi.startThumbnail(item)
 
     def on_unbind(self, factory, list_item):
         card = list_item.get_child()
@@ -66,11 +80,6 @@ class MangaGrid(Adw.BreakpointBin):
         item.paintable = None
 
         card.model = None
-
-    async def load_thumbnail(self, item):
-        paintable = await self.suwayomi.getPaintable(item.thumbnail_url)
-        if paintable:
-            item.paintable = paintable
 
     def on_activate(self, grid_view, position):
         item = self.filter_model.get_item(position)

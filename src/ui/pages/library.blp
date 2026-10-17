@@ -50,6 +50,11 @@ template $KaoriLibraryPage : Adw.NavigationPage {
           }
         }
 
+        [top]
+        Gtk.Box category_box {
+          orientation: vertical;
+        }
+
         content: $KaoriMangaGrid manga_grid {};
       };
     }

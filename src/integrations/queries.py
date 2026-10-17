@@ -68,16 +68,43 @@ MANGA_CORE_FIELDS = """
 """
 
 GET_LIBRARY = gql("""
-query GetLibrary($first: Int, $after: Cursor) {
-  mangas(condition: { inLibrary: true }, first: $first, after: $after) {
+query GetLibrary {
+  mangas(condition: { inLibrary: true }) {
     nodes {
       """ + MANGA_CORE_FIELDS + """
-      firstUnreadChapter { """ + CHAPTER_FULL_FIELDS + """ }
-      lastReadChapter { """ + CHAPTER_FULL_FIELDS + """ }
+      firstUnreadChapter { id sourceOrder }
+      lastReadChapter { id sourceOrder }
       chapters { totalCount }
     }
-    pageInfo { hasNextPage endCursor }
   }
+}
+""")
+
+GET_CATEGORIES = gql("""
+query GetCategories {
+  categories {
+    nodes {
+      id
+      name
+      order
+      default
+      mangas { nodes { id } }
+    }
+  }
+}
+""")
+
+UPDATE_LIBRARY = gql("""
+mutation UpdateLibrary($categories: [Int!]) {
+  updateLibrary(input: { categories: $categories }) {
+    updateStatus { jobsInfo { isRunning totalJobs finishedJobs } }
+  }
+}
+""")
+
+GET_LIBRARY_UPDATE_STATUS = gql("""
+query GetLibraryUpdateStatus {
+  libraryUpdateStatus { jobsInfo { isRunning totalJobs finishedJobs } }
 }
 """)
 

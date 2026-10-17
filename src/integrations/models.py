@@ -56,11 +56,20 @@ class Manga(BasicModel):
 
     def __init__(self):
         super().__init__(chapters=Gio.ListStore(item_type=Chapter))
-        self.connect("notify::description", lambda *_: self.notify("short-description"))
+        self.connect("notify::description", lambda *args: self.notify("short-description"))
 
     @GObject.Property(type=str)
     def short_description(self):
         return (self.description or "").strip().split("\n\n")[0].strip()
+
+
+class Category(BasicModel):
+    __gtype_name__ = 'KaoriCategory'
+    id = GObject.Property(type=int, default=0)
+    name = GObject.Property(type=str, default="")
+    order = GObject.Property(type=int, default=0)
+    is_default = GObject.Property(type=bool, default=False)
+    manga_count = GObject.Property(type=int, default=0)
 
 
 class Extension(BasicModel):
