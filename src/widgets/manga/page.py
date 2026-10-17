@@ -145,11 +145,11 @@ class MangaPage(Adw.NavigationPage):
         self.activate_action("app.set_chapters", GLib.Variant("i", self.model.id))
 
     def on_read(self, *args):
-        if not self.model.first_unread_chapter:
+        if not self.model.last_read_chapter:
             return
         self.activate_action(
             "app.show_reader",
-            GLib.Variant("(ii)", (self.model.id, self.model.first_unread_chapter.id))
+            GLib.Variant("(ii)", (self.model.id, self.model.last_read_chapter.id))
         )
 
     def on_toggle_library(self, *args):
