@@ -164,7 +164,7 @@ jobs:
           ls -lh dist/Kaori/_internal/Suwayomi-Server.jar
 
           mkdir -p dist/Kaori/_internal/jre
-          cp -R "$JRE_HOME/." dist/Kaori/_internal/jre/
+          ditto "$JRE_HOME" dist/Kaori/_internal/jre
           dist/Kaori/_internal/jre/bin/java -version
           echo "dist:" && ls -la dist/Kaori | head
 
@@ -190,6 +190,15 @@ jobs:
         run: |
           res="$GITHUB_WORKSPACE/Kaori.app/Contents/Resources/_internal"
           src_jar=$(ls "$GITHUB_WORKSPACE"/src/Suwayomi-Server-*.jar | head -1)
+
+          echo "---- diff: Zulu JRE vs bundled jre ----"
+          diff -rq "$JRE_HOME" "$res/jre" | head -40 || true
+          echo "---- end diff ----"
+
+          rm -rf "$RUNNER_TEMP/jre-cp" "$RUNNER_TEMP/jre-ditto"
+          cp -R "$JRE_HOME/." "$RUNNER_TEMP/jre-cp"
+          ditto "$JRE_HOME" "$RUNNER_TEMP/jre-ditto"
+
           try() {
             label=$1; java=$2; jar=$3
             cd "$RUNNER_TEMP"
@@ -199,7 +208,7 @@ jobs:
             for i in $(seq 1 40); do
               if curl -fsS -X POST -H 'Content-Type: application/json' \
                    -d '{"query":"{ __typename }"}' \
-                   http://localhost:4567/api/graphql > /dev/null; then
+                   http://localhost:4567/api/graphql > /dev/null 2>&1; then
                 ok=1
                 break
               fi
@@ -213,13 +222,17 @@ jobs:
             echo "$label: $([ $ok = 1 ] && echo PASS || echo FAIL)"
             [ $ok = 1 ]
           }
+
           rc=0
           try a-src-jar-zulu-jre "$JRE_HOME/bin/java" "$src_jar" || rc=1
           try b-bundle-jar-zulu-jre "$JRE_HOME/bin/java" "$res/Suwayomi-Server.jar" || rc=1
           try c-bundle-jar-bundle-jre "$res/jre/bin/java" "$res/Suwayomi-Server.jar" || rc=1
-          for f in a-src-jar-zulu-jre b-bundle-jar-zulu-jre c-bundle-jar-bundle-jre; do
+          try d-bundle-jar-cp-copy-outside "$RUNNER_TEMP/jre-cp/bin/java" "$res/Suwayomi-Server.jar" || rc=1
+          try e-bundle-jar-ditto-copy-outside "$RUNNER_TEMP/jre-ditto/bin/java" "$res/Suwayomi-Server.jar" || rc=1
+
+          for f in c-bundle-jar-bundle-jre d-bundle-jar-cp-copy-outside e-bundle-jar-ditto-copy-outside; do
             echo "---- $f (head) ----"
-            head -n 15 "$f.log"
+            head -n 12 "$RUNNER_TEMP/$f.log"
           done
           exit $rc
 
