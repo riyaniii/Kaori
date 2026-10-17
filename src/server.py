@@ -30,6 +30,9 @@ class LocalServer:
     def exited(self) -> bool:
         return self.process is not None and self.process.poll() is not None
 
+    def default_folder(self, name: str) -> str:
+        return os.path.join(GLib.get_user_data_dir(), 'Tachidesk', name)
+
     def start(self) -> None:
         log_dir = os.path.join(GLib.get_user_cache_dir(), 'kaori')
         os.makedirs(log_dir, exist_ok=True)

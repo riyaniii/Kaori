@@ -126,6 +126,8 @@ class Tray:
             self.add_entries(entry.children, item_id)
 
     def set_entries(self, entries: list) -> None:
+        if entries == self.entries:
+            return
         self.set_entries_data(entries)
         self.revision += 1
         self.connection.emit_signal(

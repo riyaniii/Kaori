@@ -259,3 +259,4 @@ class WebtoonReader(ReaderBase):
                 last_page_read=chapter.page_count,
             )
         )
+

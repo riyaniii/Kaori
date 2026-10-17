@@ -1,4 +1,5 @@
 import asyncio
+import os
 import sys
 
 from gi.repository import Adw, Gio, GLib, GObject, Gtk
@@ -44,6 +45,12 @@ COMBOS = {
 }
 KEYS = SWITCHES | SPINS | ENTRIES | PATHS | COMBOS
 
+DEFAULT_FOLDERS = {
+    "downloadsPath": "downloads",
+    "backupPath": "backups",
+    "localSourcePath": "local",
+}
+
 
 def key_of(row) -> str:
     return KEYS[Gtk.Buildable.get_buildable_id(row)]
@@ -88,6 +95,7 @@ class KaoriPreferences(Adw.PreferencesDialog):
         super().__init__()
         app = Gio.Application.get_default()
         self.suwayomi = app.suwayomi
+        self.server = app.server
         self.paths = {}
         self.local = app.settings.get_string('suwayomi-mode') == 'local'
 
@@ -199,10 +207,16 @@ class KaoriPreferences(Adw.PreferencesDialog):
     @Gtk.Template.Callback()
     def on_path_opened(self, button):
         row = button.get_ancestor(Adw.ActionRow)
-        if path := self.paths.get(key_of(row)):
-            Gtk.FileLauncher(file=Gio.File.new_for_path(path)).launch(self.get_root(), None, None)
-        else:
-            self.add_toast(Adw.Toast(title="Choose a folder first"))
+        key = key_of(row)
+        path = self.paths.get(key)
+        if not path:
+            path = self.server.default_folder(DEFAULT_FOLDERS[key])
+        try:
+            os.makedirs(path, exist_ok=True)
+        except OSError:
+            self.add_toast(Adw.Toast(title="Couldn't open the folder"))
+            return
+        Gtk.FileLauncher(file=Gio.File.new_for_path(path)).launch(self.get_root(), None, None)
 
     @Gtk.Template.Callback()
     def on_stores_activated(self, row):

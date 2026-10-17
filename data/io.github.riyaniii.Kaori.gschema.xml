@@ -21,5 +21,10 @@
 			<summary>Start the server on login</summary>
 			<description>Start the local Suwayomi server in the background when the user logs in.</description>
 		</key>
+		<key name="welcome-shown" type="b">
+			<default>false</default>
+			<summary>Welcome dialog shown</summary>
+			<description>Whether the welcome dialog explaining sources and the Mihon getting started guide has already been shown.</description>
+		</key>
 	</schema>
 </schemalist>

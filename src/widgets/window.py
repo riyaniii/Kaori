@@ -22,6 +22,7 @@ class KaoriWindow(Adw.ApplicationWindow):
 
     name = GObject.Property(type=str)
     downloads = GObject.Property(type=Gio.ListStore)
+    downloading = GObject.Property(type=bool, default=False)
 
     main_stack = Gtk.Template.Child()
     overlay_split_view = Gtk.Template.Child()
@@ -33,8 +34,14 @@ class KaoriWindow(Adw.ApplicationWindow):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        app = Gio.Application.get_default()
+        suwayomi = app.suwayomi
         self.name = NAME
-        self.downloads = Gio.Application.get_default().suwayomi.download_queue
+        self.downloads = suwayomi.download_queue
+        suwayomi.bind_property(
+            'downloader-state', self, 'downloading',
+            GObject.BindingFlags.SYNC_CREATE,
+            lambda binding, state: state == 'STARTED')
         list(list(list(list(list(list(self.header_bar)[0])[0])[1])[0])[0])[0].set_ellipsize(Pango.EllipsizeMode.NONE)
 
         self.create_action(actions.show_manga, parameter_type="i")
@@ -47,6 +54,7 @@ class KaoriWindow(Adw.ApplicationWindow):
         self.create_action(actions.show_extension)
         self.create_action(actions.switch_page)
         self.create_action(actions.show_toast)
+        self.create_action(actions.show_welcome, parameter_type=None)
 
         self.create_action(actions.open_search_page, ['<control>f', '<control>k'], parameter_type=None)
         self.create_action(actions.open_downloads_page, ['<control>j'], parameter_type=None)
@@ -61,6 +69,9 @@ class KaoriWindow(Adw.ApplicationWindow):
         self.overlay_split_view.add_controller(scroll_controller)
         self.swipe_accum = 0.0
         self.swipe_start_time = 0.0
+
+        if not app.settings.get_boolean('welcome-shown'):
+            GLib.idle_add(app.activate_action, 'show_welcome', None)
 
     def create_action(self, callback: callable, shortcuts: list | None = None, parameter_type: str = "s"):
         shortcuts = shortcuts or []
@@ -98,7 +109,7 @@ class KaoriWindow(Adw.ApplicationWindow):
     def on_swipe_scroll_end(self, controller):
         now = GLib.get_monotonic_time() / 1_000_000
         elapsed = max(now - self.swipe_start_time, 1e-3)
-        velocity = self.swipe_accum / elapsed  
+        velocity = self.swipe_accum / elapsed
 
         far_enough = abs(self.swipe_accum) > SWIPE_COMMIT_DISTANCE
         fast_enough = abs(velocity) > SWIPE_COMMIT_VELOCITY

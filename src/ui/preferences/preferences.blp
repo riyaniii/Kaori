@@ -37,11 +37,94 @@ template $KaoriPreferencesDialog : Adw.PreferencesDialog {
   }
 
   Adw.PreferencesPage {
-    title: _("Downloads");
-    icon-name: "folder-download-symbolic";
+    title: _("Library");
+    icon-name: "library-symbolic";
 
     Adw.PreferencesGroup {
-      title: _("Storage");
+      title: _("Updates");
+      sensitive: bind template.loaded;
+
+      Adw.SpinRow update_interval_row {
+        title: _("Update Interval");
+        subtitle: _("Hours between library updates, at least 6, or 0 to turn it off");
+        adjustment: Gtk.Adjustment {
+          lower: 0;
+          upper: 720;
+          step-increment: 1;
+          page-increment: 6;
+        };
+        notify::value => $on_spin_changed();
+      }
+
+      Adw.SpinRow parallel_sources_row {
+        title: _("Parallel Sources");
+        subtitle: _("How many sources can update or download at the same time");
+        adjustment: Gtk.Adjustment {
+          lower: 1;
+          upper: 20;
+          step-increment: 1;
+          page-increment: 2;
+        };
+        notify::value => $on_spin_changed();
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Extensions");
+      sensitive: bind template.loaded;
+
+      Adw.ActionRow {
+        title: _("Extension Stores");
+        subtitle: _("Where extensions can be installed from");
+        activatable: true;
+        activated => $on_stores_activated();
+
+        [suffix]
+        Gtk.Image {
+          icon-name: "go-next-symbolic";
+        }
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Local Source");
+      description: _("Read manga stored on your computer. Put each manga in its own folder, with a folder or a CBZ for every chapter, and add a cover.jpg for a custom cover");
+      sensitive: bind template.loaded;
+
+      Adw.ActionRow local_source_row {
+        title: _("Local Source Folder");
+        subtitle: _("Default");
+        activatable: true;
+        activated => $on_path_activated();
+
+        [suffix]
+        Gtk.Button {
+          styles ["flat"]
+          valign: center;
+          icon-name: "edit-clear-symbolic";
+          tooltip-text: _("Use Default");
+          clicked => $on_path_cleared();
+        }
+
+        [suffix]
+        Gtk.Button {
+          styles ["flat"]
+          valign: center;
+          icon-name: "folder-open-symbolic";
+          tooltip-text: _("Open Folder");
+          visible: bind template.local;
+          clicked => $on_path_opened();
+        }
+      }
+    }
+  }
+
+  Adw.PreferencesPage {
+    title: _("Storage");
+    icon-name: "folder-symbolic";
+
+    Adw.PreferencesGroup {
+      title: _("Downloads");
       sensitive: bind template.loaded;
 
       Adw.SwitchRow cbz_row {
@@ -74,28 +157,6 @@ template $KaoriPreferencesDialog : Adw.PreferencesDialog {
           visible: bind template.local;
           clicked => $on_path_opened();
         }
-      }
-    }
-  }
-
-  Adw.PreferencesPage {
-    title: _("Library");
-    icon-name: "library-symbolic";
-
-    Adw.PreferencesGroup {
-      title: _("Updates");
-      sensitive: bind template.loaded;
-
-      Adw.SpinRow update_interval_row {
-        title: _("Update Interval");
-        subtitle: _("Hours between library updates, at least 6, or 0 to turn it off");
-        adjustment: Gtk.Adjustment {
-          lower: 0;
-          upper: 720;
-          step-increment: 1;
-          page-increment: 6;
-        };
-        notify::value => $on_spin_changed();
       }
     }
 
@@ -163,79 +224,23 @@ template $KaoriPreferencesDialog : Adw.PreferencesDialog {
   }
 
   Adw.PreferencesPage {
-    title: _("Sources");
-    icon-name: "compass-symbolic";
+    title: _("Server");
+    icon-name: "network-server-symbolic";
 
-    Adw.PreferencesGroup {
-      title: _("Extensions");
-      sensitive: bind template.loaded;
+    Adw.PreferencesGroup background_group {
+      title: _("Background");
 
-      Adw.ActionRow {
-        title: _("Extension Stores");
-        subtitle: _("Where extensions can be installed from");
-        activatable: true;
-        activated => $on_stores_activated();
+      Adw.SwitchRow background_row {
+        title: _("Keep Server Running in Background");
+        subtitle: _("Keep the local server running after the window is closed");
+      }
 
-        [suffix]
-        Gtk.Image {
-          icon-name: "go-next-symbolic";
-        }
+      Adw.SwitchRow startup_row {
+        title: _("Run on Startup");
+        subtitle: _("Start the server automatically when you log in");
+        sensitive: bind background_row.active;
       }
     }
-
-    Adw.PreferencesGroup {
-      title: _("Requests");
-      sensitive: bind template.loaded;
-
-      Adw.SpinRow parallel_sources_row {
-        title: _("Parallel Sources");
-        subtitle: _("How many sources can update or download at the same time");
-        adjustment: Gtk.Adjustment {
-          lower: 1;
-          upper: 20;
-          step-increment: 1;
-          page-increment: 2;
-        };
-        notify::value => $on_spin_changed();
-      }
-    }
-
-    Adw.PreferencesGroup {
-      title: _("Local Source");
-      description: _("Read manga stored on your computer. Put each manga in its own folder, with a folder or a CBZ for every chapter, and add a cover.jpg for a custom cover");
-      sensitive: bind template.loaded;
-
-      Adw.ActionRow local_source_row {
-        title: _("Local Source Folder");
-        subtitle: _("Default");
-        activatable: true;
-        activated => $on_path_activated();
-
-        [suffix]
-        Gtk.Button {
-          styles ["flat"]
-          valign: center;
-          icon-name: "edit-clear-symbolic";
-          tooltip-text: _("Use Default");
-          clicked => $on_path_cleared();
-        }
-
-        [suffix]
-        Gtk.Button {
-          styles ["flat"]
-          valign: center;
-          icon-name: "folder-open-symbolic";
-          tooltip-text: _("Open Folder");
-          visible: bind template.local;
-          clicked => $on_path_opened();
-        }
-      }
-    }
-  }
-
-  Adw.PreferencesPage {
-    title: _("Network");
-    icon-name: "network-wired-symbolic";
 
     Adw.PreferencesGroup {
       title: _("Cloudflare Bypass");
@@ -341,26 +346,6 @@ template $KaoriPreferencesDialog : Adw.PreferencesDialog {
         show-apply-button: true;
         sensitive: bind proxy_row.active;
         apply => $on_entry_applied();
-      }
-    }
-  }
-
-  Adw.PreferencesPage {
-    title: _("Server");
-    icon-name: "network-server-symbolic";
-
-    Adw.PreferencesGroup background_group {
-      title: _("Background");
-
-      Adw.SwitchRow background_row {
-        title: _("Keep Server Running in Background");
-        subtitle: _("Keep the local server running after the window is closed");
-      }
-
-      Adw.SwitchRow startup_row {
-        title: _("Run on Startup");
-        subtitle: _("Start the server automatically when you log in");
-        sensitive: bind background_row.active;
       }
     }
 

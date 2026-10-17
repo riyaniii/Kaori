@@ -3,9 +3,9 @@ using Adw 1;
 using Gio 2.0;
 
 template $KaoriWindow : Adw.ApplicationWindow {
+  width-request: 440;
   default-width: 1100;
   default-height: 700;
-
 
   Adw.Breakpoint {
     condition ("max-width: 700sp")
@@ -107,6 +107,7 @@ template $KaoriWindow : Adw.ApplicationWindow {
                 title: "Downloads";
                 icon-name: "folder-download-symbolic";
                 badge-number: bind (template.downloads as <Gio.ListStore>).n-items;
+                needs-attention: bind template.downloading;
                 child: Adw.NavigationView downloads_nav_view {
                   Adw.NavigationPage {
                     title: "Downloads";
