@@ -1,0 +1,238 @@
+name: macOS
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+
+permissions:
+  contents: write
+
+env:
+  HOMEBREW_NO_AUTO_UPDATE: "1"
+  HOMEBREW_NO_INSTALL_CLEANUP: "1"
+  PYTHONUNBUFFERED: "1"
+  JRE_ZULU_BUILD: "25.36.205"
+  JRE_ZULU_JAVA: "25.0.4.1"
+
+jobs:
+  package:
+    name: Package .app / .dmg (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-latest
+            arch: arm64
+            jre_platform: macosx_aarch64
+          - runner: macos-15-intel
+            arch: x86_64
+            jre_platform: macosx_x64
+    env:
+      ARCH: ${{ matrix.arch }}
+      JRE_PLATFORM: ${{ matrix.jre_platform }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Check the server jar
+        run: |
+          jar=$(ls src/Suwayomi-Server-*.jar)
+          size=$(stat -f %z "$jar")
+          echo "$jar: $size bytes"
+          if [ "$size" -lt 1000000 ]; then
+            echo "$jar is a Git LFS pointer, not the real jar" >&2
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: |
+          brew install \
+            gtk4 libadwaita pygobject3 \
+            blueprint-compiler meson ninja \
+            gettext pkg-config librsvg \
+            adwaita-icon-theme gsettings-desktop-schemas \
+            gobject-introspection
+          echo "$(brew --prefix gettext)/bin" >> "$GITHUB_PATH"
+          python3 -m pip install --break-system-packages --upgrade pip
+          python3 -m pip install --break-system-packages --ignore-installed \
+            pyinstaller httpx diskcache babel \
+            "gql[aiohttp,websockets,httpx]"
+
+      - name: Build resources
+        run: |
+          meson setup build
+          meson compile -C build
+          gresource=$(find build -name kaori.gresource | head -1)
+          echo "gresource: $gresource"
+          test -n "$gresource"
+          echo "KAORI_GRESOURCE=$PWD/$gresource" >> "$GITHUB_ENV"
+
+      - name: Import check
+        run: |
+          mkdir -p smoke
+          ln -sfn "$PWD/src" smoke/kaori
+          PYTHONPATH="$PWD/smoke" python3 - <<'PY'
+          import os
+          import gi
+          gi.require_version("Gtk", "4.0")
+          gi.require_version("Adw", "1")
+          from gi.repository import Gio
+
+          resource = os.environ["KAORI_GRESOURCE"]
+          Gio.Resource.load(resource)._register()
+          print("registered", resource)
+
+          import kaori.main  # noqa: F401
+          print("imported kaori.main")
+          PY
+
+      - name: Prepare metadata
+        run: |
+          version=$(sed -n "s/^[[:space:]]*version:[[:space:]]*'\([^']*\)'.*/\1/p" meson.build | head -1)
+          echo "KAORI_VERSION=$version" >> "$GITHUB_ENV"
+          echo "version: $version"
+
+          mkdir -p build/schemas build/locale
+          cp data/io.github.riyaniii.Kaori.gschema.xml build/schemas/
+          glib-compile-schemas build/schemas
+          shopt -s nullglob
+          pos=(po/*.po)
+          if [ ${#pos[@]} -gt 0 ]; then
+            for po in "${pos[@]}"; do
+              lang=$(basename "$po" .po)
+              mkdir -p "build/locale/$lang/LC_MESSAGES"
+              msgfmt -o "build/locale/$lang/LC_MESSAGES/kaori.mo" "$po"
+            done
+          else
+            echo "no .po files found; skipping locales"
+          fi
+          echo "$version" > build/version
+          echo "schemas:" && ls build/schemas
+          echo "locales:" && ls -R build/locale
+
+      - name: Fetch the JRE and app icon
+        run: |
+          jre_zip="zulu${JRE_ZULU_BUILD}-ca-jre${JRE_ZULU_JAVA}-${JRE_PLATFORM}.zip"
+          curl -fsSL "https://cdn.azul.com/zulu/bin/${jre_zip}" -o "$RUNNER_TEMP/$jre_zip"
+          mkdir -p "$RUNNER_TEMP/jre"
+          unzip -q "$RUNNER_TEMP/$jre_zip" -d "$RUNNER_TEMP/jre"
+          home=$(find "$RUNNER_TEMP/jre" -type d -path '*/Contents/Home' | head -1)
+          echo "JRE_HOME=$home" >> "$GITHUB_ENV"
+          "$home/bin/java" -version
+
+          rsvg-convert -w 1024 -h 1024 \
+            data/icons/hicolor/scalable/apps/io.github.riyaniii.Kaori.svg \
+            -o build/icon.png
+          rm -rf build/Kaori.iconset
+          mkdir -p build/Kaori.iconset
+          for s in 16 32 128 256 512; do
+            sips -z "$s" "$s" build/icon.png --out "build/Kaori.iconset/icon_${s}x${s}.png" >/dev/null
+            d=$((s * 2))
+            sips -z "$d" "$d" build/icon.png --out "build/Kaori.iconset/icon_${s}x${s}@2x.png" >/dev/null
+          done
+          iconutil -c icns build/Kaori.iconset -o build/Kaori.icns
+          ls -lh build/Kaori.icns
+
+      - name: Freeze the app with PyInstaller
+        env:
+          KAORI_ROOT: ${{ github.workspace }}
+        run: |
+          mkdir -p build/pypkg
+          ln -sfn "$PWD/src" build/pypkg/kaori
+          python3 -m PyInstaller --clean --noconfirm \
+            --workpath build/pyinstaller --distpath dist mac/kaori.spec
+          rm -rf build/pypkg
+
+          for tl in Gtk-4.0.typelib Adw-1.typelib; do
+            if ! find dist/Kaori -iname "$tl" | grep -q .; then
+              echo "ERROR: $tl missing from the bundle" >&2
+              find dist/Kaori -iname '*.typelib' | sort >&2
+              exit 1
+            fi
+          done
+          echo "typelibs:" && find dist/Kaori -iname '*.typelib' | sort
+
+          if [ ! -f dist/Kaori/_internal/Suwayomi-Server.jar ]; then
+            echo "ERROR: _internal/Suwayomi-Server.jar missing" >&2
+            find dist/Kaori -iname '*.jar' | sort >&2
+            exit 1
+          fi
+          ls -lh dist/Kaori/_internal/Suwayomi-Server.jar
+
+          mkdir -p dist/Kaori/_internal/runtime
+          ditto "$JRE_HOME" dist/Kaori/_internal/runtime
+          dist/Kaori/_internal/runtime/bin/java -version
+          echo "dist:" && ls -la dist/Kaori | head
+
+      - name: Assemble and sign the .app
+        run: |
+          app="Kaori.app"
+          rm -rf "$app"
+          mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
+          cp -R dist/Kaori/. "$app/Contents/Resources/"
+          swiftc mac/launch-kaori.swift -o "$app/Contents/MacOS/Kaori"
+          cp build/Kaori.icns "$app/Contents/Resources/Kaori.icns"
+          sed "s/@VERSION@/$KAORI_VERSION/g" mac/Info.plist > "$app/Contents/Info.plist"
+          plutil -lint "$app/Contents/Info.plist"
+
+          find "$app" -type f -not -path "*/runtime/*" \
+            -exec sh -c 'file "$1" | grep -q "Mach-O" && codesign -f -s - "$1"' _ {} \; 2>/dev/null || true
+          codesign -f -s - "$app"
+          codesign --verify --verbose=2 "$app"
+          "$app/Contents/Resources/_internal/runtime/bin/java" -version
+          echo "bundle:" && find "$app" -maxdepth 3 -type d | head -20
+
+      - name: Smoke-test the bundled server
+        run: |
+          res="$GITHUB_WORKSPACE/Kaori.app/Contents/Resources/_internal"
+          cd "$RUNNER_TEMP"
+          "$res/runtime/bin/java" \
+            -Dsuwayomi.tachidesk.config.server.systemTrayEnabled=false \
+            -Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false \
+            -Dsuwayomi.tachidesk.config.server.kcefEnabled=false \
+            -jar "$res/Suwayomi-Server.jar" > server.log 2>&1 &
+          pid=$!
+          ok=0
+          for i in $(seq 1 90); do
+            if curl -fsS -X POST -H 'Content-Type: application/json' \
+                 -d '{"query":"{ __typename }"}' \
+                 http://localhost:4567/api/graphql > /dev/null 2>&1; then
+              ok=1
+              echo "server ready after ${i}s"
+              break
+            fi
+            grep -q "unhandled exception" server.log && break
+            kill -0 $pid 2>/dev/null || break
+            sleep 1
+          done
+          kill $pid 2>/dev/null || true
+          wait $pid 2>/dev/null || true
+          if [ $ok != 1 ]; then
+            echo "server never became ready" >&2
+            head -n 40 server.log >&2
+            echo "----" >&2
+            tail -n 80 server.log >&2
+            exit 1
+          fi
+
+      - name: Create the .dmg
+        run: |
+          hdiutil create -volname Kaori -srcfolder Kaori.app -ov -format UDZO \
+            "Kaori-${KAORI_VERSION}-${ARCH}.dmg"
+          ls -lh ./*.dmg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Kaori-macOS-${{ env.ARCH }}
+          path: Kaori-*-${{ env.ARCH }}.dmg
+          compression-level: 0
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Kaori-*-${{ env.ARCH }}.dmg

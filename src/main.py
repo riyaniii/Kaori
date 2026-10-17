@@ -17,10 +17,16 @@ from gql.transport.exceptions import TransportError
 from .constants import NAME, set_version
 from .integrations import Suwayomi
 from .server import LocalServer
-from .tray import Entry, Tray
 from .widgets import KaoriWindow, build_shortcuts
 from .widgets.preferences import KaoriPreferences
 from .widgets.setup import SetupWindow
+
+# The tray is Linux-only (StatusNotifier/DBus). Importing it unconditionally
+# breaks startup on macOS, so only import it where it can work.
+if sys.platform == 'linux':
+    from .tray import Entry, Tray
+else:
+    Entry = Tray = None
 
 APPLICATION_ID = 'io.github.riyaniii.Kaori'
 
@@ -87,6 +93,7 @@ class KaoriApplication(Adw.Application):
             return
 
         hidden = (background_start
+                  and sys.platform == 'linux'
                   and mode == 'local'
                   and self.settings.get_boolean('run-in-background'))
 
@@ -108,9 +115,16 @@ class KaoriApplication(Adw.Application):
     async def launch_or_setup(self, mode: str, url: str, show_window: bool = True) -> None:
         try:
             if not await self.launch(mode, url, show_window):
-                self.show_setup_window(
-                    error="Couldn't reconnect. Check your setup and try again.")
+                log_path = getattr(self.server, 'log_path', None)
+                if mode == 'local' and log_path:
+                    self.show_setup_window(
+                        error=("The local server didn't start. See the log:\n"
+                               f"{log_path}"))
+                else:
+                    self.show_setup_window(
+                        error="Couldn't reconnect. Check your setup and try again.")
         except Exception as e:
+            print(f'[kaori] failed to start: {e!r}')
             self.server.stop()
             self.show_setup_window(error=f"Failed to start: {e}")
         finally:
@@ -139,6 +153,12 @@ class KaoriApplication(Adw.Application):
         deadline = loop.time() + READY_TIMEOUT
         while loop.time() < deadline:
             if self.server.exited:
+                print('[kaori] server exited early')
+                tail = getattr(self.server, 'log_tail', None)
+                if callable(tail):
+                    print('[kaori] ---- server.log (tail) ----')
+                    print(tail())
+                    print('[kaori] ----------------------------')
                 return False
             try:
                 if await self.suwayomi.getServerSettings():
@@ -146,6 +166,7 @@ class KaoriApplication(Adw.Application):
             except (TransportError, OSError, TimeoutError):
                 pass
             await asyncio.sleep(POLL_INTERVAL)
+        print(f'[kaori] server did not become ready within {READY_TIMEOUT}s')
         return False
 
     def set_background_hold(self, held: bool) -> None:
@@ -156,6 +177,8 @@ class KaoriApplication(Adw.Application):
         self.background_held = held
 
     def set_tray(self, shown: bool) -> None:
+        if Tray is None:
+            return
         if shown and not self.tray:
             self.tray = Tray(APPLICATION_ID, NAME, self.tray_entries())
         elif not shown and self.tray:

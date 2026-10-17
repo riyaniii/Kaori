@@ -80,13 +80,23 @@ class SetupWindow(Adw.ApplicationWindow):
         asyncio.create_task(self.try_connect(mode, url))
 
     async def try_connect(self, mode: str, url: str):
-        success = await self.app.launch(mode, url)
+        error = None
+        try:
+            success = await self.app.launch(mode, url)
+        except Exception as e:
+            print(f'[kaori] launch raised: {e!r}')
+            success = False
+            error = f"Failed to start: {e}"
         if success:
             self.close()
-        else:
-            self.set_visible(True)
-            self.status_page.set_description(
-                "Couldn't connect. Check the address and try again."
-                if mode == "remote" else
-                "Couldn't start the local server. Check the logs and try again."
-            )
+            return
+        self.set_visible(True)
+        if error is None:
+            log_path = getattr(self.app.server, 'log_path', None)
+            if mode == "remote":
+                error = "Couldn't connect. Check the address and try again."
+            elif log_path:
+                error = f"Couldn't start the local server. See the log:\n{log_path}"
+            else:
+                error = "Couldn't start the local server. Check the logs and try again."
+        self.status_page.set_description(error)
