@@ -129,6 +129,7 @@ class KaoriApplication(Adw.Application):
             self.release()
 
     async def launch(self, mode: str, url: str, show_window: bool = True) -> bool:
+        print(f'[kaori] launch mode={mode!r} url={url!r} running={self.server.running}')
         local = mode == 'local'
         if local and not self.server.running:
             self.server.start()
