@@ -21,6 +21,8 @@ from .widgets import KaoriWindow, build_shortcuts
 from .widgets.preferences import KaoriPreferences
 from .widgets.setup import SetupWindow
 
+# The tray is Linux-only (StatusNotifier/DBus). Importing it unconditionally
+# breaks startup on macOS, so only import it where it can work.
 if sys.platform == 'linux':
     from .tray import Entry, Tray
 else:
@@ -129,7 +131,6 @@ class KaoriApplication(Adw.Application):
             self.release()
 
     async def launch(self, mode: str, url: str, show_window: bool = True) -> bool:
-        print(f'[kaori] launch mode={mode!r} url={url!r} running={self.server.running}')
         local = mode == 'local'
         if local and not self.server.running:
             self.server.start()

@@ -1,14 +1,24 @@
 import os
-import shutil
 import subprocess
+import sys
 
 from gi.repository import GLib
 
 JAR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                    'Suwayomi-Server.jar')
 
+
+def java_executable() -> str:
+    home = os.environ.get('JAVA_HOME')
+    if home:
+        candidate = os.path.join(home, 'bin', 'java')
+        if os.path.isfile(candidate):
+            return candidate
+    return 'java'
+
+
 COMMAND = [
-    'java',
+    java_executable(),
     '-Dsuwayomi.tachidesk.config.server.systemTrayEnabled=false',
     '-Dsuwayomi.tachidesk.config.server.initialOpenInBrowserEnabled=false',
     '-Dsuwayomi.tachidesk.config.server.kcefEnabled=false',
@@ -33,7 +43,11 @@ class LocalServer:
         return self.process is not None and self.process.poll() is not None
 
     def default_folder(self, name: str) -> str:
-        return os.path.join(GLib.get_user_data_dir(), 'Tachidesk', name)
+        if sys.platform == 'darwin':
+            base = os.path.expanduser('~/Library/Application Support')
+        else:
+            base = GLib.get_user_data_dir()
+        return os.path.join(base, 'Tachidesk', name)
 
     def start(self) -> None:
         log_dir = os.path.join(GLib.get_user_cache_dir(), 'kaori')
@@ -42,7 +56,7 @@ class LocalServer:
         print('[kaori] launching local Suwayomi server')
         print(f'[kaori]   command: {" ".join(COMMAND)}')
         print(f'[kaori]   jar:     {JAR} exists={os.path.exists(JAR)}')
-        print(f'[kaori]   java:    {shutil.which("java")}')
+        print(f'[kaori]   java:    {COMMAND[0]}')
         print(f'[kaori]   log:     {self.log_path}')
         self.log = open(self.log_path, 'ab')
         self.process = subprocess.Popen(
