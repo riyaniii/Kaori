@@ -1,6 +1,6 @@
 import asyncio
 
-from gi.repository import Gtk, GObject, Gio, GLib, Adw
+from gi.repository import Gtk, GObject, Gio, GLib
 from ..manga import MangaCard
 from ...integrations import models
 
@@ -39,9 +39,7 @@ class MangaRow(Gtk.Box):
         item = list_item.get_item()
         card = list_item.get_child()
         card.model = item
-
-        if item.paintable is None and item.thumbnail_url:
-            card.thumbnail_task = asyncio.create_task(self.load_thumbnail(item))
+        card.thumbnail_task = self.suwayomi.startThumbnail(item)
 
     def on_unbind(self, factory, list_item):
         card = list_item.get_child()
@@ -54,11 +52,6 @@ class MangaRow(Gtk.Box):
 
         card.model = None
 
-    async def load_thumbnail(self, item):
-        paintable = await self.suwayomi.getPaintable(item.thumbnail_url)
-        if paintable:
-            item.paintable = paintable
-
     def on_activate(self, listview, position):
         item = self.store.get_item(position)
         listview.activate_action("app.show_manga", GLib.Variant("i", item.id))
@@ -68,4 +61,3 @@ class MangaRow(Gtk.Box):
 
     def set_items(self, items: list):
         self.store.splice(0, self.store.get_n_items(), items)
-

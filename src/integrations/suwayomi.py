@@ -1,11 +1,13 @@
 import gi
 gi.require_version('Gdk', '4.0')
-from gi.repository import Gdk, Gio, GLib, GObject
+gi.require_version('GdkPixbuf', '2.0')
+from gi.repository import Gdk, GdkPixbuf, Gio, GLib, GObject
 
 import asyncio
 import enum
 import json
 import os
+from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.parse import urljoin
@@ -22,6 +24,7 @@ from .queries import *
 MODEL_CLASSES = {
     'Manga': models.Manga,
     'Chapter': models.Chapter,
+    'Category': models.Category,
     'Extension': models.Extension,
     'Source': models.Source,
     'Download': models.Download,
@@ -34,7 +37,16 @@ IMAGE_TTL = 30 * 24 * 60 * 60
 CACHE_SIZE_LIMIT = 500 * 1024 * 1024
 GRAPHQL_TIMEOUT = 20
 POLL_INTERVAL = 10
+LIBRARY_POLL_TICKS = 3
+SOURCE_POLL_TICKS = 30
+AUTO_UPDATE_INTERVAL = 30 * 60
+AUTO_UPDATE_RETRY = 60
+UPDATE_POLL_INTERVAL = 3
 LOCAL_SOURCE_ID = "0"
+DEFAULT_CATEGORY_ID = 0
+THUMB_WIDTH = 300
+THUMB_HEIGHT = 450
+THUMB_CACHE_ITEMS = 256
 
 READING_MODES = {
     0: ("single", "vertical"),
@@ -73,7 +85,7 @@ def watch(widget, obj: GObject.Object, callback, signal: str = "items-changed"):
         callback()
 
     def on_unrealize(*args):
-        obj.disconnect(handler)
+        GObject.Object.disconnect(obj, handler)
 
     handler = obj.connect(signal, on_signal)
     widget.connect("unrealize", on_unrealize)
@@ -90,6 +102,7 @@ class Suwayomi(GObject.Object):
     downloader_state = GObject.Property(type=str, default="STOPPED")
     download_queue = GObject.Property(type=Gio.ListStore)
     library = GObject.Property(type=Gio.ListStore)
+    category_revision = GObject.Property(type=int, default=0)
 
     def __init__(self):
         super().__init__()
@@ -98,6 +111,8 @@ class Suwayomi(GObject.Object):
         self.closing = set()
         self.session = None
         self.poller = None
+        self.updater = None
+        self.updating = False
         self.connect_lock = asyncio.Lock()
         self.client = makeClient(self.url)
 
@@ -121,8 +136,12 @@ class Suwayomi(GObject.Object):
         worker_count = max(2, min(4, os.cpu_count() or 2))
         self.decoder = ThreadPoolExecutor(max_workers=worker_count)
 
+        self.thumbs = OrderedDict()
+        self.category_members = {}
+
         self.download_queue = Gio.ListStore(item_type=models.Download)
         self.library = Gio.ListStore(item_type=models.Manga)
+        self.categories = Gio.ListStore(item_type=models.Category)
         self.sources = Gio.ListStore(item_type=models.Source)
         self.all_sources = Gio.ListStore(item_type=models.Source)
         self.extensions = Gio.ListStore(item_type=models.Extension)
@@ -164,21 +183,38 @@ class Suwayomi(GObject.Object):
     def startPolling(self):
         if self.poller is None:
             self.poller = asyncio.create_task(self.poll())
+        if self.updater is None:
+            self.updater = asyncio.create_task(self.autoUpdate())
 
     def stopPolling(self):
         if self.poller:
             self.poller.cancel()
             self.poller = None
+        if self.updater:
+            self.updater.cancel()
+            self.updater = None
 
     async def poll(self):
+        ticks = 0
         while True:
             await asyncio.sleep(POLL_INTERVAL)
-            await asyncio.gather(
-                self.refreshLibrary(),
-                self.refreshSources(),
-                self.getDownloadStatus(),
-                return_exceptions=True,
-            )
+            ticks += 1
+            jobs = [self.getDownloadStatus()]
+            if ticks % LIBRARY_POLL_TICKS == 0:
+                jobs.append(self.refreshLibrary())
+            if ticks % SOURCE_POLL_TICKS == 0:
+                jobs.append(self.refreshSources())
+            await asyncio.gather(*jobs, return_exceptions=True)
+
+    async def autoUpdate(self):
+        while True:
+            try:
+                await self.updateLibrary()
+                delay = AUTO_UPDATE_INTERVAL
+            except Exception as error:
+                print(f"library update failed: {error}")
+                delay = AUTO_UPDATE_RETRY
+            await asyncio.sleep(delay)
 
     async def getSession(self):
         async with self.connect_lock:
@@ -190,15 +226,26 @@ class Suwayomi(GObject.Object):
         session = await self.getSession()
         return await session.execute(gql_query, variable_values=variable_values)
 
-    async def shared(self, key, factory):
-        if key not in self.pending:
-            def forget(task):
-                self.pending.pop(key, None)
+    def forget(self, key, entry):
+        if self.pending.get(key) is entry:
+            del self.pending[key]
 
+    async def shared(self, key, factory):
+        entry = self.pending.get(key)
+        if entry is None:
             task = asyncio.create_task(factory())
-            task.add_done_callback(forget)
-            self.pending[key] = task
-        return await asyncio.shield(self.pending[key])
+            entry = {"task": task, "waiters": 0}
+            self.pending[key] = entry
+            task.add_done_callback(lambda finished: self.forget(key, entry))
+
+        entry["waiters"] += 1
+        try:
+            return await asyncio.shield(entry["task"])
+        finally:
+            entry["waiters"] -= 1
+            if entry["waiters"] == 0 and not entry["task"].done():
+                self.forget(key, entry)
+                entry["task"].cancel()
 
     @staticmethod
     def replace(store: Gio.ListStore, items: list):
@@ -209,6 +256,7 @@ class Suwayomi(GObject.Object):
         data = await asyncio.to_thread(self.cache.get, url)
         if data is None:
             response = await self.http.get(url)
+            response.raise_for_status()
             data = response.content
             await asyncio.to_thread(self.cache.set, url, data, expire=IMAGE_TTL)
         return data
@@ -217,10 +265,52 @@ class Suwayomi(GObject.Object):
     def decode(raw: bytes) -> Gdk.Paintable:
         return Gdk.Texture.new_from_bytes(GLib.Bytes.new(raw))
 
+    @staticmethod
+    def decodeThumbnail(raw: bytes) -> Gdk.Paintable:
+        try:
+            stream = Gio.MemoryInputStream.new_from_bytes(GLib.Bytes.new(raw))
+            pixbuf = GdkPixbuf.Pixbuf.new_from_stream_at_scale(stream, THUMB_WIDTH, THUMB_HEIGHT, True, None)
+            return Gdk.Texture.new_for_pixbuf(pixbuf)
+        except GLib.Error:
+            return Gdk.Texture.new_from_bytes(GLib.Bytes.new(raw))
+
     async def getPaintable(self, url: str) -> Gdk.Paintable:
         raw = await self.shared(('bytes', url), lambda: self.loadBytes(url))
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(self.decoder, self.decode, raw)
+
+    def cachedThumbnail(self, url: str):
+        texture = self.thumbs.get(url)
+        if texture is not None:
+            self.thumbs.move_to_end(url)
+        return texture
+
+    async def getThumbnail(self, url: str) -> Gdk.Paintable:
+        texture = self.cachedThumbnail(url)
+        if texture is not None:
+            return texture
+        raw = await self.shared(('bytes', url), lambda: self.loadBytes(url))
+        loop = asyncio.get_running_loop()
+        texture = await loop.run_in_executor(self.decoder, self.decodeThumbnail, raw)
+        self.thumbs[url] = texture
+        while len(self.thumbs) > THUMB_CACHE_ITEMS:
+            self.thumbs.popitem(last=False)
+        return texture
+
+    async def loadThumbnail(self, item):
+        try:
+            item.paintable = await self.getThumbnail(item.thumbnail_url)
+        except Exception as error:
+            print(f"thumbnail failed: {item.thumbnail_url}: {error}")
+
+    def startThumbnail(self, item):
+        if item.paintable is not None or not item.thumbnail_url:
+            return None
+        cached = self.cachedThumbnail(item.thumbnail_url)
+        if cached is not None:
+            item.paintable = cached
+            return None
+        return asyncio.create_task(self.loadThumbnail(item))
 
     def getModel(self, model_id: int | str, item_type: str) -> GObject.Object | None:
         return self.loaded_models.get((item_type, model_id))
@@ -288,6 +378,15 @@ class Suwayomi(GObject.Object):
                 values[name] = item[key]
         model.update_data(id=item['id'], **values)
 
+    def fillCategory(self, model, item: dict):
+        model.update_data(
+            id=item['id'],
+            name=item['name'],
+            order=item.get('order', 0),
+            is_default=item.get('default', False),
+            manga_count=item.get('mangaCount', 0),
+        )
+
     def fillExtension(self, model, item: dict):
         values = {}
         for key, name in EXTENSION_FIELDS.items():
@@ -310,11 +409,14 @@ class Suwayomi(GObject.Object):
             extension_name=extension.get('name', ''),
         )
 
-    async def getManga(self, manga_id: int) -> models.Manga:
+    async def getManga(self, manga_id: int, force: bool = False) -> models.Manga:
         model = self.getModel(manga_id, 'Manga')
-        if model and model.initialized:
+        if model and model.initialized and not force:
             return model
         return await self.shared(('manga', manga_id), lambda: self.fetchManga(manga_id))
+
+    async def refreshManga(self, manga_id: int) -> models.Manga:
+        return await self.getManga(manga_id, force=True)
 
     async def fetchManga(self, manga_id: int) -> models.Manga:
         variables = {"id": manga_id, "fetchManga": True, "fetchChapters": True}
@@ -340,12 +442,71 @@ class Suwayomi(GObject.Object):
         await self.shared('library', self.loadLibrary)
 
     async def loadLibrary(self):
-        result = await self.query(GET_LIBRARY)
-        manga_models = self.makeModels(result['mangas']['nodes'], 'Manga')
+        results = await asyncio.gather(self.query(GET_LIBRARY), self.query(GET_CATEGORIES))
+        library_result = results[0]
+        category_result = results[1]
+
+        manga_models = []
+        for index, node in enumerate(library_result['mangas']['nodes']):
+            manga_models.append(self.makeModel(node, 'Manga'))
+            if index % 200 == 199:
+                await asyncio.sleep(0)
+
+        self.buildCategories(category_result['categories']['nodes'], manga_models)
+
+        kept = set(manga_models)
         for model in list(self.library):
-            if model not in manga_models:
+            if model not in kept:
                 model.in_library = False
         self.replace(self.library, manga_models)
+
+    def buildCategories(self, nodes: list, manga_models: list):
+        members = {}
+        category_models = []
+        assigned = set()
+
+        for node in sorted(nodes, key=lambda node: node['order']):
+            if node['id'] == DEFAULT_CATEGORY_ID:
+                continue
+            ids = set(manga['id'] for manga in node['mangas']['nodes'])
+            assigned = assigned | ids
+            members[node['id']] = ids
+            node_data = dict(node)
+            node_data['mangaCount'] = len(ids)
+            category_models.append(self.makeModel(node_data, 'Category'))
+
+        default_ids = set(manga.id for manga in manga_models) - assigned
+        if default_ids:
+            members[DEFAULT_CATEGORY_ID] = default_ids
+            default_data = {
+                'id': DEFAULT_CATEGORY_ID,
+                'name': 'Default',
+                'order': 0,
+                'default': True,
+                'mangaCount': len(default_ids),
+            }
+            category_models.insert(0, self.makeModel(default_data, 'Category'))
+
+        changed = members != self.category_members
+        self.category_members = members
+        self.replace(self.categories, category_models)
+        if changed:
+            self.category_revision += 1
+
+    async def updateLibrary(self):
+        if self.updating:
+            return
+        self.updating = True
+        try:
+            await self.query(UPDATE_LIBRARY, {"categories": None})
+            while True:
+                await asyncio.sleep(UPDATE_POLL_INTERVAL)
+                result = await self.query(GET_LIBRARY_UPDATE_STATUS)
+                if not result['libraryUpdateStatus']['jobsInfo']['isRunning']:
+                    break
+        finally:
+            self.updating = False
+        await self.refreshLibrary()
 
     def syncLibraryMembership(self, model: models.Manga, in_library: bool):
         found, position = self.library.find(model)
@@ -499,6 +660,9 @@ class Suwayomi(GObject.Object):
         result = await self.query(SET_MANGA_LIBRARY, {"id": manga_id, "inLibrary": in_library})
         node = result['updateManga']['manga']
         model.update_data(in_library_at=node['inLibraryAt'], unread_count=node['unreadCount'])
+
+        if in_library:
+            await self.refreshLibrary()
 
     async def addToLibrary(self, manga_id: int):
         await self.setMangaLibrary(manga_id, True)

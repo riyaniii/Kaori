@@ -93,6 +93,7 @@ class MangaPage(Adw.NavigationPage):
 
         self.add_manga_action("read", self.on_read)
         self.add_manga_action("toggle_library", self.on_toggle_library)
+        self.add_manga_action("refresh", self.on_refresh)
         self.add_manga_action("download", self.on_download, GLib.VariantType.new("s"))
 
     def add_manga_action(self, name, callback, param_type=None):
@@ -106,7 +107,7 @@ class MangaPage(Adw.NavigationPage):
         overlay.add_toast(Adw.Toast(title=message, timeout=1, use_markup=False))
 
     @Gtk.Template.Callback()
-    def on_shown(self, *_):
+    def on_shown(self, *args):
         if self.model.initialized:
             asyncio.create_task(self.load_chapters())
         else:
@@ -119,11 +120,31 @@ class MangaPage(Adw.NavigationPage):
     async def load_chapters(self):
         await self.suwayomi.getChapters(self.model.id)
         self.refresh_chapter_panel()
+        if self.model.total_chapters == 0:
+            await self.refresh(False)
+
+    def on_refresh(self, *args):
+        asyncio.create_task(self.refresh(True))
+
+    async def refresh(self, notify):
+        action = self.actions.lookup_action("refresh")
+        action.set_enabled(False)
+        try:
+            await self.suwayomi.refreshManga(self.model.id)
+        except Exception:
+            if notify:
+                self.show_toast("Refresh failed")
+            return
+        finally:
+            action.set_enabled(True)
+        self.refresh_chapter_panel()
+        if notify:
+            self.show_toast(f"{self.model.total_chapters} chapters")
 
     def refresh_chapter_panel(self):
         self.activate_action("app.set_chapters", GLib.Variant("i", self.model.id))
 
-    def on_read(self, *_):
+    def on_read(self, *args):
         if not self.model.first_unread_chapter:
             return
         self.activate_action(
@@ -131,7 +152,7 @@ class MangaPage(Adw.NavigationPage):
             GLib.Variant("(ii)", (self.model.id, self.model.first_unread_chapter.id))
         )
 
-    def on_toggle_library(self, *_):
+    def on_toggle_library(self, *args):
         asyncio.create_task(self.toggle_library())
 
     def on_download(self, action, param):
