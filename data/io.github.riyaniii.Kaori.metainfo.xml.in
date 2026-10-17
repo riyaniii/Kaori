@@ -67,6 +67,19 @@
   </screenshots>
 
   <releases>
+    <release version="0.9.6" date="2026-10-17">
+      <url type="details">https://github.com/riyaniii/Kaori/releases/tag/v0.9.6</url>
+      <description translate="no">
+        <ul>
+          <li>Refactor.</li>
+          <li>Made the server startup on login and run in the background for near-instant startup times.</li>
+          <li>Added an appindicator tray.</li>
+          <li>Settings parity with Suwayomi Server.</li>
+          <li>Added option to change the local source's path,</li>
+          <li>Added a dialog for guiding users that aren't familiar with Suwayomi or the Mihon ecosystem.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.9.5" date="2026-10-16">
       <url type="details">https://github.com/riyaniii/Kaori/releases/tag/v0.9.5</url>
       <description translate="no">
