@@ -163,9 +163,9 @@ jobs:
           fi
           ls -lh dist/Kaori/_internal/Suwayomi-Server.jar
 
-          mkdir -p dist/Kaori/_internal/jre
-          ditto "$JRE_HOME" dist/Kaori/_internal/jre
-          dist/Kaori/_internal/jre/bin/java -version
+          mkdir -p dist/Kaori/_internal/runtime
+          ditto "$JRE_HOME" dist/Kaori/_internal/runtime
+          dist/Kaori/_internal/runtime/bin/java -version
           echo "dist:" && ls -la dist/Kaori | head
 
       - name: Assemble and sign the .app
@@ -179,11 +179,11 @@ jobs:
           sed "s/@VERSION@/$KAORI_VERSION/g" mac/Info.plist > "$app/Contents/Info.plist"
           plutil -lint "$app/Contents/Info.plist"
 
-          find "$app" -type f -not -path "*/jre/*" \
+          find "$app" -type f -not -path "*/runtime/*" \
             -exec sh -c 'file "$1" | grep -q "Mach-O" && codesign -f -s - "$1"' _ {} \; 2>/dev/null || true
           codesign -f -s - "$app"
           codesign --verify --verbose=2 "$app"
-          "$app/Contents/Resources/_internal/jre/bin/java" -version
+          "$app/Contents/Resources/_internal/runtime/bin/java" -version
           echo "bundle:" && find "$app" -maxdepth 3 -type d | head -20
 
       - name: Bisect server startup
@@ -191,13 +191,12 @@ jobs:
           res="$GITHUB_WORKSPACE/Kaori.app/Contents/Resources/_internal"
           src_jar=$(ls "$GITHUB_WORKSPACE"/src/Suwayomi-Server-*.jar | head -1)
 
-          echo "---- diff: Zulu JRE vs bundled jre ----"
-          diff -rq "$JRE_HOME" "$res/jre" | head -40 || true
-          echo "---- end diff ----"
-
-          rm -rf "$RUNNER_TEMP/jre-cp" "$RUNNER_TEMP/jre-ditto"
-          cp -R "$JRE_HOME/." "$RUNNER_TEMP/jre-cp"
-          ditto "$JRE_HOME" "$RUNNER_TEMP/jre-ditto"
+          rm -rf "$RUNNER_TEMP/layout-jre" "$RUNNER_TEMP/layout-runtime"
+          mkdir -p "$RUNNER_TEMP/layout-jre" "$RUNNER_TEMP/layout-runtime"
+          cp "$res/Suwayomi-Server.jar" "$RUNNER_TEMP/layout-jre/"
+          cp "$res/Suwayomi-Server.jar" "$RUNNER_TEMP/layout-runtime/"
+          ditto "$JRE_HOME" "$RUNNER_TEMP/layout-jre/jre"
+          ditto "$JRE_HOME" "$RUNNER_TEMP/layout-runtime/runtime"
 
           try() {
             label=$1; java=$2; jar=$3
@@ -213,6 +212,7 @@ jobs:
                 break
               fi
               grep -q "unhandled exception" "$label.log" && break
+              grep -q "InvalidPackagesException" "$label.log" && break
               kill -0 $pid 2>/dev/null || break
               sleep 1
             done
@@ -226,13 +226,13 @@ jobs:
           rc=0
           try a-src-jar-zulu-jre "$JRE_HOME/bin/java" "$src_jar" || rc=1
           try b-bundle-jar-zulu-jre "$JRE_HOME/bin/java" "$res/Suwayomi-Server.jar" || rc=1
-          try c-bundle-jar-bundle-jre "$res/jre/bin/java" "$res/Suwayomi-Server.jar" || rc=1
-          try d-bundle-jar-cp-copy-outside "$RUNNER_TEMP/jre-cp/bin/java" "$res/Suwayomi-Server.jar" || rc=1
-          try e-bundle-jar-ditto-copy-outside "$RUNNER_TEMP/jre-ditto/bin/java" "$res/Suwayomi-Server.jar" || rc=1
+          try c-bundled-runtime-in-app "$res/runtime/bin/java" "$res/Suwayomi-Server.jar" || rc=1
+          try f-dir-named-jre-next-to-jar "$RUNNER_TEMP/layout-jre/jre/bin/java" "$RUNNER_TEMP/layout-jre/Suwayomi-Server.jar" || rc=1
+          try g-dir-named-runtime-next-to-jar "$RUNNER_TEMP/layout-runtime/runtime/bin/java" "$RUNNER_TEMP/layout-runtime/Suwayomi-Server.jar" || rc=1
 
-          for f in c-bundle-jar-bundle-jre d-bundle-jar-cp-copy-outside e-bundle-jar-ditto-copy-outside; do
+          for f in c-bundled-runtime-in-app f-dir-named-jre-next-to-jar g-dir-named-runtime-next-to-jar; do
             echo "---- $f (head) ----"
-            head -n 12 "$RUNNER_TEMP/$f.log"
+            head -n 8 "$RUNNER_TEMP/$f.log"
           done
           exit $rc
 
