@@ -37,7 +37,7 @@
     <color type="primary" scheme_preference="dark">#3F4F82</color>
   </branding>
 
-   <requires>
+  <requires>
     <control>keyboard</control>
     <control>pointing</control>
     <display_length compare="ge">768</display_length>
@@ -67,6 +67,18 @@
   </screenshots>
 
   <releases>
+    <release version="0.9.8" date="2026-10-20">
+      <url type="details">https://github.com/riyaniii/Kaori/releases/tag/v0.9.8</url>
+      <description translate="no">
+        <ul>
+          <li>Major refactor.</li>
+          <li>Added the History and Updates pages.</li>
+          <li>Made the preferences page more accessible.</li>
+          <li>Added Library Categories.</li>
+          <li>Added a manga context menu.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.9.6" date="2026-10-17">
       <url type="details">https://github.com/riyaniii/Kaori/releases/tag/v0.9.6</url>
       <description translate="no">
@@ -75,7 +87,7 @@
           <li>Made the server startup on login and run in the background for near-instant startup times.</li>
           <li>Added an appindicator tray.</li>
           <li>Settings parity with Suwayomi Server.</li>
-          <li>Added option to change the local source's path,</li>
+          <li>Added option to change the local source's path.</li>
           <li>Added a dialog for guiding users that aren't familiar with Suwayomi or the Mihon ecosystem.</li>
         </ul>
       </description>
