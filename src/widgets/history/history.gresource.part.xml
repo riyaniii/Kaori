@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresource>
+  <file alias="history/page.ui">widgets/history/page.ui</file>
+  <file alias="history/row.ui">widgets/history/row.ui</file>
+</gresource>

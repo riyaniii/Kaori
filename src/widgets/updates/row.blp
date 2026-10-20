@@ -1,0 +1,132 @@
+using Gtk 4.0;
+
+template $KaoriUpdatesRow : Gtk.Box {
+  orientation: vertical;
+
+  Gtk.Box {
+    spacing: 12;
+    margin-top: 12;
+    margin-bottom: 12;
+    margin-start: 8;
+    margin-end: 8;
+    opacity: bind $row_opacity(template.chapter as <$KaoriChapter> .is_read) as <float>;
+
+    Gtk.AspectFrame {
+      ratio: 0.667;
+      obey-child: false;
+      valign: center;
+
+      child: Gtk.Overlay {
+        child: Gtk.Picture {
+          styles [
+            "r5"
+          ]
+          paintable: bind template.manga as <$KaoriManga> .paintable;
+          content-fit: cover;
+          width-request: 52;
+          overflow: hidden;
+        };
+
+        [overlay]
+        Gtk.Image {
+          icon-name: "media-record-symbolic";
+          pixel-size: 12;
+          halign: end;
+          valign: start;
+          margin-top: 4;
+          margin-end: 4;
+          visible: bind $is_unread(template.chapter as <$KaoriChapter> .is_read) as <bool>;
+        }
+      };
+    }
+
+    Gtk.Box {
+      orientation: vertical;
+      hexpand: true;
+      valign: start;
+
+      Gtk.CenterBox {
+        [start]
+        Gtk.Label {
+          xalign: 0;
+          ellipsize: end;
+          label: bind template.manga as <$KaoriManga> .title;
+        }
+
+        [end]
+        Gtk.Box {
+          spacing: 6;
+
+          Gtk.Image {
+            icon-name: "folder-download-symbolic";
+            valign: center;
+            visible: bind template.chapter as <$KaoriChapter> .is_downloaded;
+            styles [
+              "dimmed"
+            ]
+          }
+
+          Gtk.Label {
+            valign: center;
+            label: bind $time_text(template.chapter as <$KaoriChapter> .fetched_at) as <string>;
+            styles [
+              "dimmed"
+            ]
+          }
+        }
+      }
+
+      Gtk.Label {
+        styles [
+          "dimmed"
+        ]
+        xalign: 0;
+        ellipsize: end;
+        label: bind $subtitle_text(template.chapter as <$KaoriChapter> .name, template.chapter as <$KaoriChapter> .chapter_number, template.chapter as <$KaoriChapter> .is_read, template.chapter as <$KaoriChapter> .page_count, template.chapter as <$KaoriChapter> .last_page_read) as <string>;
+      }
+
+      Gtk.Label {
+        styles [
+          "dimmed"
+        ]
+        xalign: 0;
+        label: bind $count_text(template.chapter_count) as <string>;
+        visible: bind $many_chapters(template.chapter_count) as <bool>;
+      }
+    }
+
+    Gtk.Button {
+      styles [
+        "circular",
+        "flat"
+      ]
+      icon-name: bind $expand_icon(template.expanded) as <string>;
+      tooltip-text: _("Show chapters");
+      valign: start;
+      visible: bind $many_chapters(template.chapter_count) as <bool>;
+      clicked => $on_expand_clicked();
+    }
+
+    Gtk.Button {
+      styles [
+        "circular",
+        "flat"
+      ]
+      icon-name: "media-playback-start-symbolic";
+      tooltip-text: _("Continue reading");
+      valign: start;
+      clicked => $on_resume_clicked();
+    }
+  }
+
+  Gtk.Revealer {
+    reveal-child: bind template.expanded;
+
+    child: Gtk.Box chapters_box {
+      orientation: vertical;
+      margin-start: 72;
+      margin-end: 8;
+      margin-bottom: 8;
+    };
+  }
+}

@@ -1,0 +1,61 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriBrowsePage : Adw.NavigationPage {
+  title: "Browse";
+  tag: "browse";
+
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      title-widget: Adw.ViewSwitcher {
+        stack: browse_stack;
+        policy: wide;
+      };
+
+      [start]
+      Gtk.Button {
+        icon-name: "translate-symbolic";
+        tooltip-text: _("Languages");
+        clicked => $on_languages_clicked();
+      }
+
+      [end]
+      Gtk.ToggleButton search_button {
+        icon-name: "edit-find-symbolic";
+        tooltip-text: _("Search");
+      }
+    }
+
+    [top]
+    Gtk.SearchBar {
+      search-mode-enabled: bind search_button.active bidirectional;
+
+      child: Gtk.SearchEntry {
+        hexpand: true;
+        max-width-chars: 40;
+        key-capture-widget: template;
+        placeholder-text: bind $get_placeholder(browse_stack.visible-child-name) as <string>;
+        search-changed => $on_search_changed();
+      };
+    }
+
+    content: Adw.ViewStack browse_stack {
+      Adw.ViewStackPage {
+        name: "sources";
+        title: _("Sources");
+        icon-name: "chain-link-symbolic";
+        child: Adw.NavigationView source_nav_view {
+          $KaoriSourcesPage sources_page {}
+        };
+      }
+
+      Adw.ViewStackPage {
+        name: "extensions";
+        title: _("Extensions");
+        icon-name: "application-x-addon-symbolic";
+        child: $KaoriExtensionsPage extensions_page {};
+      }
+    };
+  };
+}

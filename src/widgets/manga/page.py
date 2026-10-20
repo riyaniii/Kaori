@@ -1,14 +1,15 @@
 import re
 import asyncio
+from gettext import gettext as _, ngettext
 from gi.repository import Gtk, Adw, GObject, Gio, GLib
 
 from ...integrations import models
 
-from .card import MangaCard
 
 def markdown_to_pango(md: str) -> str:
     if md is None:
-        return
+        return ""
+
     def inline(text: str) -> str:
         text = GLib.markup_escape_text(text or "")
 
@@ -102,9 +103,7 @@ class MangaPage(Adw.NavigationPage):
         self.actions.add_action(action)
 
     def show_toast(self, message):
-        overlay = self.get_root().toast_overlay
-        overlay.dismiss_all()
-        overlay.add_toast(Adw.Toast(title=message, timeout=1, use_markup=False))
+        self.activate_action("app.show_toast", GLib.Variant("s", message))
 
     @Gtk.Template.Callback()
     def on_shown(self, *args):
@@ -133,30 +132,56 @@ class MangaPage(Adw.NavigationPage):
             await self.suwayomi.refreshManga(self.model.id)
         except Exception:
             if notify:
-                self.show_toast("Refresh failed")
+                self.show_toast(_("Refresh failed"))
             return
         finally:
             action.set_enabled(True)
         self.refresh_chapter_panel()
         if notify:
-            self.show_toast(f"{self.model.total_chapters} chapters")
+            count = self.model.total_chapters
+            self.show_toast(ngettext("{} chapter", "{} chapters", count).format(count))
 
     def refresh_chapter_panel(self):
         self.activate_action("app.set_chapters", GLib.Variant("i", self.model.id))
 
     def on_read(self, *args):
-        if not self.model.last_read_chapter:
+        chapter = self.model.first_unread_chapter or self.model.last_read_chapter
+        if chapter is None:
             return
         self.activate_action(
             "app.show_reader",
-            GLib.Variant("(ii)", (self.model.id, self.model.last_read_chapter.id))
+            GLib.Variant("(ii)", (self.model.id, chapter.id))
         )
 
     def on_toggle_library(self, *args):
         asyncio.create_task(self.toggle_library())
 
-    def on_download(self, action, param):
-        asyncio.create_task(self.download_chapters(int(param.get_string())))
+    def on_download(self, action, parameter):
+        if self.model.chapters.get_n_items() == 0:
+            self.show_toast(_("No chapters to download"))
+            return
+        chapters = self.chapters_to_download(int(parameter.get_string()))
+        asyncio.create_task(self.download_chapters(chapters))
+
+    def chapters_to_download(self, amount):
+        chapters = self.model.sorted_chapters()
+
+        if amount == 0:
+            candidates = chapters
+        elif amount < 0:
+            candidates = []
+            for chapter in chapters:
+                if not chapter.is_read:
+                    candidates.append(chapter)
+        else:
+            start = self.model.first_unread_index()
+            candidates = chapters[start:start + amount]
+
+        pending = []
+        for chapter in candidates:
+            if not chapter.is_downloaded:
+                pending.append(chapter)
+        return pending
 
     async def toggle_library(self):
         model = self.model
@@ -164,52 +189,53 @@ class MangaPage(Adw.NavigationPage):
 
         await self.suwayomi.setMangaLibrary(model.id, not was_in_library)
 
-        verb = "removed from" if was_in_library else "added to"
-        self.show_toast(f"{model.title} {verb} library")
+        if was_in_library:
+            self.show_toast(_("{} removed from library").format(model.title))
+        else:
+            self.show_toast(_("{} added to library").format(model.title))
 
-    async def download_chapters(self, count):
-        pending = [
-            chapter for chapter in sorted(self.model.chapters, key=lambda c: c.source_order)
-            if not chapter.is_downloaded
-        ]
-        if count != 0:
-            pending = [chapter for chapter in pending if not chapter.is_read]
-        if count > 0:
-            pending = pending[:count]
-
-        if not pending:
-            self.show_toast("Nothing to download")
+    async def download_chapters(self, chapters):
+        if not chapters:
+            self.show_toast(_("Nothing to download"))
             return
 
-        for chapter in pending:
+        for chapter in chapters:
             await self.suwayomi.enqueueChapterDownload(chapter.id)
 
-        noun = "chapter" if len(pending) == 1 else "chapters"
-        self.show_toast(f"Downloading {len(pending)} {noun}")
+        count = len(chapters)
+        self.show_toast(ngettext("Downloading {} chapter", "Downloading {} chapters", count).format(count))
+
+    def clear_box(self, box):
+        while child := box.get_first_child():
+            box.remove(child)
 
     @Gtk.Template.Callback()
     def populate_genres(self, obj, genre):
-        while child := self.genres.get_first_child():
-            self.genres.remove(child)
-        for name in genre or []:
+        self.clear_box(self.genres)
+
+        names = list(genre or [])
+        for name in names:
             self.genres.append(Gtk.Button(label=name))
-        return bool(genre)
+
+        return bool(names)
 
     @Gtk.Template.Callback()
     def get_read_button_label(self, obj, chapter):
-        if chapter == None:
-            return "..."
-        if chapter.source_order > 1:
-            return "Continue"
-        return "Start"
+        if chapter is not None and chapter.source_order > 1:
+            return _("Continue")
+        return _("Read")
 
     @Gtk.Template.Callback()
     def get_library_icon_name(self, obj, in_library):
-        return "heart-filled-symbolic" if in_library else "heart-outline-thick-symbolic"
+        if in_library:
+            return "heart-filled-symbolic"
+        return "heart-outline-thick-symbolic"
 
     @Gtk.Template.Callback()
     def get_library_button_tooltip(self, obj, in_library):
-        return "Remove from library" if in_library else "Add to library"
+        if in_library:
+            return _("Remove from library")
+        return _("Add to library")
 
     @Gtk.Template.Callback()
     def get_description(self, obj, description):

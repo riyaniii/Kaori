@@ -3,7 +3,6 @@ integration_sources = [
   'suwayomi.py',
   'queries.py',
   'models.py',
-  'list.py'
 ]
 
 install_data(integration_sources, install_dir: moduledir / 'integrations')

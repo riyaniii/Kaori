@@ -4,6 +4,8 @@ import sys
 
 from gi.repository import GLib
 
+STOP_TIMEOUT = 10
+
 JAR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                    'Suwayomi-Server.jar')
 
@@ -76,7 +78,11 @@ class LocalServer:
     def stop(self) -> None:
         if self.process:
             self.process.terminate()
-            self.process.wait()
+            try:
+                self.process.wait(timeout=STOP_TIMEOUT)
+            except subprocess.TimeoutExpired:
+                self.process.kill()
+                self.process.wait()
             self.process = None
         if self.log:
             self.log.close()

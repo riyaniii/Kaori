@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresource>
+  <file alias="source/sources.ui">widgets/source/sources.ui</file>
+  <file alias="source/card.ui">widgets/source/card.ui</file>
+  <file alias="source/page.ui">widgets/source/page.ui</file>
+  <file alias="source/filter.ui">widgets/source/filter.ui</file>
+</gresource>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresource>
+  <file alias="library/page.ui">widgets/library/page.ui</file>
+  <file alias="library/category_row.ui">widgets/library/category_row.ui</file>
+  <file alias="library/category_panel.ui">widgets/library/category_panel.ui</file>
+  <file alias="library/category_edit.ui">widgets/library/category_edit.ui</file>
+  <file alias="library/category_manager.ui">widgets/library/category_manager.ui</file>
+</gresource>

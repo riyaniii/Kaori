@@ -16,9 +16,10 @@ MAX_FRAME_DELTA = 0.05
 PAGE_SCROLL_DURATION = 250
 PAGE_SCROLL_RATIO = 0.9
 
+
 class TransitionPage(models.Page):
     def __init__(self, chapter):
-        super().__init__(index=-1, chapter_id=chapter.id)
+        super().__init__(index=-1, chapter_id=chapter.id, ratio=BANNER_RATIO)
         self.chapter = chapter
 
 
@@ -202,21 +203,20 @@ class WebtoonReader(ReaderBase):
         finally:
             self.loading.discard(side)
 
-        banner = [TransitionPage(chapter)] if self.chapters else []
+        first_load = not self.chapters
+        banner = [] if first_load else [TransitionPage(chapter)]
         block = banner + pages
 
         if prepend:
             self.chapters.insert(0, chapter)
-            banner_index = 0
+            insert_at = 0
         else:
             self.chapters.append(chapter)
-            banner_index = self.store.get_n_items()
-        self.store.splice(banner_index, 0, block)
+            insert_at = self.store.get_n_items()
+        self.store.splice(insert_at, 0, block)
 
-        if banner:
-            self.canvas.set_ratio(banner_index, BANNER_RATIO)
-
-        self.position = self.current_position
+        if first_load:
+            self.position = self.current_position
 
     def maybe_prefetch(self, page):
         if not self.chapters:
@@ -259,4 +259,3 @@ class WebtoonReader(ReaderBase):
                 last_page_read=chapter.page_count,
             )
         )
-

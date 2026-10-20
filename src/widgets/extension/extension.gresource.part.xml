@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresource>
+  <file alias="extension/extensions.ui">widgets/extension/extensions.ui</file>
+  <file alias="extension/card.ui">widgets/extension/card.ui</file>
+  <file alias="extension/dialog.ui">widgets/extension/dialog.ui</file>
+</gresource>

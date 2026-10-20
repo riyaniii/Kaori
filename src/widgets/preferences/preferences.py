@@ -12,10 +12,14 @@ MODES = (
     ("double", "Double Page", "view-dual-symbolic"),
 )
 
+DISPLAY_MODES = ("compact", "comfortable")
+
 SWITCHES = {
     "cbz_row": "downloadAsCbz",
-    "flaresolverr_row": "flareSolverrEnabled",
     "flaresolverr_fallback_row": "flareSolverrAsResponseFallback",
+}
+EXPANDERS = {
+    "flaresolverr_row": "flareSolverrEnabled",
     "proxy_row": "socksProxyEnabled",
 }
 SPINS = {
@@ -43,7 +47,7 @@ PATHS = {
 COMBOS = {
     "proxy_version_row": "socksProxyVersion",
 }
-KEYS = SWITCHES | SPINS | ENTRIES | PATHS | COMBOS
+KEYS = SWITCHES | EXPANDERS | SPINS | ENTRIES | PATHS | COMBOS
 
 DEFAULT_FOLDERS = {
     "downloadsPath": "downloads",
@@ -62,6 +66,9 @@ class KaoriPreferences(Adw.PreferencesDialog):
 
     orientation_row = Gtk.Template.Child()
     direction_row = Gtk.Template.Child()
+    display_mode_row = Gtk.Template.Child()
+    unread_badge_row = Gtk.Template.Child()
+    download_badge_row = Gtk.Template.Child()
     cbz_row = Gtk.Template.Child()
     location_row = Gtk.Template.Child()
     update_interval_row = Gtk.Template.Child()
@@ -96,14 +103,23 @@ class KaoriPreferences(Adw.PreferencesDialog):
         app = Gio.Application.get_default()
         self.suwayomi = app.suwayomi
         self.server = app.server
+        self.settings = app.settings
         self.paths = {}
-        self.local = app.settings.get_string('suwayomi-mode') == 'local'
+        self.local = self.settings.get_string('suwayomi-mode') == 'local'
 
         self.background_group.set_visible(sys.platform == 'linux' and self.local)
-        app.settings.bind('run-in-background', self.background_row, 'active',
-                          Gio.SettingsBindFlags.DEFAULT)
-        app.settings.bind('run-on-startup', self.startup_row, 'active',
-                          Gio.SettingsBindFlags.DEFAULT)
+        self.settings.bind('run-in-background', self.background_row, 'active',
+                           Gio.SettingsBindFlags.DEFAULT)
+        self.settings.bind('run-on-startup', self.startup_row, 'active',
+                           Gio.SettingsBindFlags.DEFAULT)
+        self.settings.bind('library-show-unread-badge', self.unread_badge_row, 'active',
+                           Gio.SettingsBindFlags.DEFAULT)
+        self.settings.bind('library-show-download-badge', self.download_badge_row, 'active',
+                           Gio.SettingsBindFlags.DEFAULT)
+
+        display_mode = self.settings.get_string('library-display-mode')
+        if display_mode in DISPLAY_MODES:
+            self.display_mode_row.set_selected(DISPLAY_MODES.index(display_mode))
 
         self.mode_stack = Adw.ViewStack()
         for name, title, icon in MODES:
@@ -119,6 +135,8 @@ class KaoriPreferences(Adw.PreferencesDialog):
         )
         for name, key in SWITCHES.items():
             getattr(self, name).set_active(settings[key])
+        for name, key in EXPANDERS.items():
+            getattr(self, name).set_enable_expansion(settings[key])
         for name, key in SPINS.items():
             getattr(self, name).set_value(settings[key] or 0)
         for name, key in ENTRIES.items():
@@ -158,6 +176,15 @@ class KaoriPreferences(Adw.PreferencesDialog):
         self.save_reading_mode()
 
     @Gtk.Template.Callback()
+    def on_display_mode_changed(self, row, pspec):
+        settings = getattr(self, "settings", None)
+        if settings is None:
+            return
+        display_mode = DISPLAY_MODES[row.get_selected()]
+        if settings.get_string('library-display-mode') != display_mode:
+            settings.set_string('library-display-mode', display_mode)
+
+    @Gtk.Template.Callback()
     def on_orientation_changed(self, row, pspec):
         self.save_reading_mode()
 
@@ -171,6 +198,10 @@ class KaoriPreferences(Adw.PreferencesDialog):
     @Gtk.Template.Callback()
     def on_switch_toggled(self, row, pspec):
         self.save(row, row.get_active())
+
+    @Gtk.Template.Callback()
+    def on_expander_toggled(self, row, pspec):
+        self.save(row, row.get_enable_expansion())
 
     @Gtk.Template.Callback()
     def on_spin_changed(self, row, pspec):

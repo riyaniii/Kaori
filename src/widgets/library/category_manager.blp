@@ -1,0 +1,44 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriCategoryManagerDialog: Adw.Dialog {
+  title: _("Manage Categories");
+  content-width: 440;
+
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {}
+
+    content: Gtk.ScrolledWindow {
+      propagate-natural-height: true;
+      max-content-height: 500;
+
+      child: Adw.Clamp {
+        maximum-size: 400;
+
+        child: Gtk.Box {
+          orientation: vertical;
+          spacing: 24;
+          margin-start: 12;
+          margin-end: 12;
+          margin-top: 12;
+          margin-bottom: 12;
+
+          Adw.PreferencesGroup {
+            title: _("New Category");
+
+            Adw.EntryRow {
+              title: _("Name");
+              show-apply-button: true;
+              apply => $on_new_applied();
+            }
+          }
+
+          Adw.PreferencesGroup categories_group {
+            title: _("Categories");
+          }
+        };
+      };
+    };
+  };
+}

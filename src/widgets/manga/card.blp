@@ -1,0 +1,85 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriMangaCard : Gtk.Box {
+  orientation: vertical;
+  spacing: 6;
+  margin-start: 6;
+  margin-end: 6;
+  margin-top: 6;
+  margin-bottom: 6;
+  tooltip-text: bind template.model as <$KaoriManga> .title;
+
+  Gtk.AspectFrame {
+    ratio: 0.667;
+    obey-child: false;
+
+    child: Gtk.Overlay {
+      child: Gtk.Picture poster {
+        styles [
+          "rounded"
+        ]
+        paintable: bind template.model as <$KaoriManga> .paintable;
+        content-fit: cover;
+        width-request: 185;
+      };
+
+      [overlay]
+      Gtk.Label {
+        styles [
+          "badge",
+          "body"
+        ]
+        halign: start;
+        valign: start;
+        margin-start: 6;
+        margin-top: 6;
+        label: bind $number_text(template.model as <$KaoriManga> .unread_count) as <string>;
+        visible: bind $badge_visible(template.options as <$KaoriLibraryOptions> .show_unread_badge, template.model as <$KaoriManga> .unread_count) as <bool>;
+      }
+
+      [overlay]
+      Gtk.Label {
+        styles [
+          "badge",
+          "body"
+        ]
+        halign: end;
+        valign: start;
+        margin-end: 6;
+        margin-top: 6;
+        label: bind $number_text(template.model as <$KaoriManga> .download_count) as <string>;
+        visible: bind $badge_visible(template.options as <$KaoriLibraryOptions> .show_download_badge, template.model as <$KaoriManga> .download_count) as <bool>;
+      }
+
+      [overlay]
+      Gtk.Label {
+        styles [
+          "reader-osd",
+          "heading"
+        ]
+        halign: fill;
+        valign: end;
+        xalign: 0.0;
+        margin-start: 6;
+        margin-end: 6;
+        margin-bottom: 6;
+        ellipsize: end;
+        label: bind template.model as <$KaoriManga> .title;
+        visible: bind $overlay_title_visible(template.show_title, template.options as <$KaoriLibraryOptions> .display_mode) as <bool>;
+      }
+    };
+  }
+
+  Gtk.Inscription title {
+    styles [
+      "heading"
+    ]
+    text: bind template.model as <$KaoriManga> .title;
+    visible: bind $title_visible(template.show_title, template.options as <$KaoriLibraryOptions> .display_mode) as <bool>;
+    hexpand: true;
+    valign: center;
+    xalign: 0.0;
+    text-overflow: ellipsize_end;
+  }
+}

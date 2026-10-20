@@ -1,0 +1,49 @@
+using Gtk 4.0;
+
+template $KaoriExtensionCard : Gtk.Box {
+  orientation: horizontal;
+  spacing: 12;
+  margin-top: 12;
+  margin-bottom: 12;
+  margin-start: 8;
+  margin-end: 8;
+
+  Gtk.Image icon {
+    pixel-size: 50;
+    paintable: bind template.model as <$KaoriExtension> .paintable;
+  }
+
+  Gtk.Box info {
+    orientation: vertical;
+    spacing: 2;
+    valign: center;
+    hexpand: true;
+
+    Gtk.Label name {
+      label: bind template.model as <$KaoriExtension> .name;
+      xalign: 0.0;
+      ellipsize: end;
+    }
+
+    Gtk.Label subtitle {
+      styles [
+        "dim-label"
+      ]
+      label: bind $get_subtitle(template.model as <$KaoriExtension> .lang, template.model as <$KaoriExtension> .version_name, template.model as <$KaoriExtension> .is_nsfw) as <string>;
+      xalign: 0.0;
+      ellipsize: end;
+    }
+  }
+
+  Gtk.Button action_button {
+    valign: center;
+    styles [
+      "flat",
+      "circular"
+    ]
+    sensitive: bind $get_not(template.model as <$KaoriExtension> .is_busy) as <bool>;
+    tooltip-text: bind $get_action_button_tooltip(template.model as <$KaoriExtension> .is_installed, template.model as <$KaoriExtension> .has_update) as <string>;
+    icon-name: bind $get_action_button_icon_name(template.model as <$KaoriExtension> .is_installed, template.model as <$KaoriExtension> .has_update) as <string>;
+    action-name: "extension.apply";
+  }
+}

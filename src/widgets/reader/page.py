@@ -13,6 +13,7 @@ from .double import DoublePageReader
 
 LAST_PAGE = 10**6
 SETTINGS_SAVE_DELAY = 500
+PROGRESS_SAVE_DELAY = 1000
 HEADER_HOVER_HEIGHT = 48
 HEADER_HIDE_DELAY = 1500
 
@@ -63,7 +64,8 @@ class ReaderPage(Adw.NavigationPage):
 
         self.store = Gio.ListStore(item_type=models.Page)
         self.load_task = None
-        self.saved_pages = {}
+        self.dirty_chapters = []
+        self.progress_id = 0
 
         sync = GObject.BindingFlags.SYNC_CREATE
         both_ways = sync | GObject.BindingFlags.BIDIRECTIONAL
@@ -290,6 +292,9 @@ class ReaderPage(Adw.NavigationPage):
         if self.save_settings_id:
             GLib.source_remove(self.save_settings_id)
             self.flush_settings()
+        if self.progress_id:
+            GLib.source_remove(self.progress_id)
+            self.flush_progress()
 
     def on_reader_switched(self, stack, pspec):
         self.active_reader = self.readers[stack.get_visible_child_name()]
@@ -410,27 +415,38 @@ class ReaderPage(Adw.NavigationPage):
 
     def on_position_notify(self, page, pspec):
         chapter = self.chapter_model
-        if chapter is None or self.loading():
+        if chapter is None or self.loading() or chapter.page_count <= 0:
             return
-        saved = max(self.saved_pages.get(chapter.id, 0), chapter.last_page_read)
-        if self.position + 1 > saved:
-            self.save_progress()
 
-    def save_progress(self):
-        chapter = self.chapter_model
-        total = chapter.page_count
-        if total <= 0:
+        page_number = self.position + 1
+        if page_number <= chapter.last_page_read:
             return
-        page = self.position + 1
+
         seen = self.position + self.active_reader.step
-        self.saved_pages[chapter.id] = page
-        asyncio.create_task(
-            self.suwayomi.updateChapter(
-                chapter_id=chapter.id,
-                is_read=chapter.is_read or seen >= total,
-                last_page_read=page,
-            )
+        chapter.update_data(
+            last_page_read=page_number,
+            is_read=chapter.is_read or seen >= chapter.page_count,
         )
+        self.queue_save(chapter)
+
+    def queue_save(self, chapter):
+        if chapter not in self.dirty_chapters:
+            self.dirty_chapters.append(chapter)
+        if not self.progress_id:
+            self.progress_id = GLib.timeout_add(PROGRESS_SAVE_DELAY, self.flush_progress)
+
+    def flush_progress(self):
+        self.progress_id = 0
+        for chapter in self.dirty_chapters:
+            asyncio.create_task(
+                self.suwayomi.updateChapter(
+                    chapter_id=chapter.id,
+                    is_read=chapter.is_read,
+                    last_page_read=chapter.last_page_read,
+                )
+            )
+        self.dirty_chapters = []
+        return GLib.SOURCE_REMOVE
 
     @Gtk.Template.Callback()
     def on_settings_clicked(self, *args):

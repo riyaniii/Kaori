@@ -15,13 +15,17 @@ class MangaGrid(Adw.BreakpointBin):
         self.search_text = ""
         self.category_id = None
         self.suwayomi = Gio.Application.get_default().suwayomi
+        self.options = models.LibraryOptions(show_unread_badge=False)
 
         self.store = Gio.ListStore(item_type=models.Manga)
 
         self.custom_filter = Gtk.CustomFilter.new(self.filter_func)
         self.filter_model = Gtk.FilterListModel(model=self.store, filter=self.custom_filter)
 
-        selection = Gtk.NoSelection(model=self.filter_model)
+        self.custom_sorter = Gtk.CustomSorter.new(self.sort_func)
+        self.sort_model = Gtk.SortListModel(model=self.filter_model)
+
+        selection = Gtk.NoSelection(model=self.sort_model)
         self.grid.set_model(selection)
         self.grid.connect('activate', self.on_activate)
 
@@ -32,6 +36,24 @@ class MangaGrid(Adw.BreakpointBin):
         self.grid.set_factory(factory)
 
         watch(self, self.suwayomi, self.refilter, "notify::category-revision")
+        watch(self, self.suwayomi, self.on_library_changed, "notify::library-revision")
+
+    def use_options(self, options):
+        self.options = options
+        self.sort_model.set_sorter(self.custom_sorter)
+        options.connect("notify", self.on_options_changed)
+        self.refilter()
+
+    def on_options_changed(self, options, pspec):
+        name = pspec.name
+        if name == "sort-key" or name == "reverse":
+            self.custom_sorter.changed(Gtk.SorterChange.DIFFERENT)
+        elif name.startswith("filter-") or name.startswith("status-") or name == "source-id":
+            self.refilter()
+
+    def on_library_changed(self):
+        self.custom_sorter.changed(Gtk.SorterChange.DIFFERENT)
+        self.refilter()
 
     def bind_store(self, store: Gio.ListStore):
         self.store = store
@@ -46,7 +68,12 @@ class MangaGrid(Adw.BreakpointBin):
             if item.id not in members:
                 return False
         title = (item.title or "").lower()
-        return self.search_text in title
+        if self.search_text not in title:
+            return False
+        return self.options.matches(item)
+
+    def sort_func(self, first, second, *args):
+        return self.options.compare_manga(first, second)
 
     def set_search_text(self, text: str):
         self.search_text = text.strip().lower()
@@ -67,22 +94,18 @@ class MangaGrid(Adw.BreakpointBin):
     def on_bind(self, factory, list_item):
         item = list_item.get_item()
         card = list_item.get_child()
+        card.options = self.options
         card.model = item
         card.thumbnail_task = self.suwayomi.startThumbnail(item)
 
     def on_unbind(self, factory, list_item):
         card = list_item.get_child()
-        if card.thumbnail_task:
-            card.thumbnail_task.cancel()
-            card.thumbnail_task = None
-
-        item = list_item.get_item()
-        item.paintable = None
-
+        self.suwayomi.stopThumbnail(list_item.get_item(), card.thumbnail_task)
+        card.thumbnail_task = None
         card.model = None
 
     def on_activate(self, grid_view, position):
-        item = self.filter_model.get_item(position)
+        item = self.sort_model.get_item(position)
         grid_view.activate_action("app.show_manga", GLib.Variant("i", item.id))
 
     def remove_all(self):

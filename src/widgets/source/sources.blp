@@ -1,0 +1,78 @@
+using Gtk 4.0;
+using Adw 1;
+using Gio 2.0;
+
+template $KaoriSourcesPage : Adw.NavigationPage {
+  title: "Sources";
+  tag: "sources";
+  map => $on_shown();
+
+  child: Gtk.Stack {
+    transition-type: crossfade;
+    visible-child-name: bind $get_page((template.sources as <Gio.ListStore>).n-items) as <string>;
+
+    Gtk.StackPage {
+      name: "greeter";
+      child: Adw.StatusPage {
+        icon-name: "network-server-symbolic";
+        title: _("No sources found");
+        description: _("You can add them from preferences");
+      };
+    }
+
+    Gtk.StackPage {
+      name: "sources";
+      child: Gtk.ScrolledWindow {
+        hscrollbar-policy: never;
+        child: Gtk.ListView {
+          styles [
+            "navigation-sidebar"
+          ]
+          margin-start: 12;
+          margin-end: 12;
+          single-click-activate: true;
+          activate => $on_activate();
+
+          model: Gtk.NoSelection {
+            model: Gtk.SortListModel {
+              sorter: Gtk.MultiSorter {
+                Gtk.StringSorter {
+                  expression: expr item as <$KaoriSource>.lang;
+                }
+
+                Gtk.StringSorter {
+                  expression: expr item as <$KaoriSource>.name;
+                }
+              };
+
+              section-sorter: Gtk.StringSorter {
+                expression: expr item as <$KaoriSource>.lang;
+              };
+
+              model: Gtk.FilterListModel {
+                filter: Gtk.StringFilter {
+                  expression: expr item as <$KaoriSource>.name;
+                  search: bind template.search_text;
+                  match-mode: substring;
+                };
+
+                model: bind template.sources;
+              };
+            };
+          };
+
+          factory: Gtk.SignalListItemFactory {
+            setup => $on_setup();
+            bind => $on_bind();
+            unbind => $on_unbind();
+          };
+
+          header-factory: Gtk.SignalListItemFactory {
+            setup => $on_header_setup();
+            bind => $on_header_bind();
+          };
+        };
+      };
+    }
+  };
+}

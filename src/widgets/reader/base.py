@@ -8,6 +8,7 @@ ZOOM_MIN = 1.0
 ZOOM_MAX = 4.0
 ZOOM_STEP = 1.25
 PIXELS_PER_STEP = 40
+PREFETCH_SPREADS = 2
 
 
 def adjacent_chapter(manga, chapter, direction):
@@ -142,7 +143,7 @@ class PagedReader(ReaderBase):
         super().__init__(**kwargs)
         self.zoom = 1.0
         self.current_position = 0
-        self.tasks = []
+        self.tasks = {}
         self.groups = {}
         self.drag_origin = (0.0, 0.0)
 
@@ -155,6 +156,8 @@ class PagedReader(ReaderBase):
         drag.connect("drag-update", self.on_drag_update)
         drag.connect("drag-end", self.on_drag_end)
         self.add_controller(drag)
+
+        self.connect("map", self.on_mapped)
 
     @property
     def pictures(self):
@@ -219,27 +222,52 @@ class PagedReader(ReaderBase):
             self.groups[picture] = group
         return group
 
-    def show_current(self):
-        self.reset_zoom()
-        for task in self.tasks:
-            task.cancel()
-        self.tasks = []
+    def on_mapped(self, reader):
+        self.show_current()
 
+    def show_current(self):
+        if self.store is None or not self.get_mapped():
+            return
+
+        self.reset_zoom()
         for offset, picture in enumerate(self.pictures):
             page = self.page_at(self.current_position + offset)
             picture.set_paintable(None)
             self.binding_group(picture).set_source(page)
-            if page and page.paintable is None and page.url:
-                task = asyncio.create_task(self.load_paintable(page))
-                self.tasks.append(task)
+        self.refresh_window()
 
-    async def load_paintable(self, page):
-        try:
-            paintable = await self.suwayomi.getPaintable(page.url)
-        except Exception:
-            return
-        if paintable:
-            page.paintable = paintable
+    def wanted_pages(self):
+        start = self.current_position
+        step = self.step
+        indexes = list(range(start, start + step * (1 + PREFETCH_SPREADS)))
+        indexes += list(range(start - step, start))
+        pages = (self.page_at(index) for index in indexes)
+        return [page for page in pages if page is not None]
+
+    def refresh_window(self):
+        wanted = self.wanted_pages()
+
+        for page in self.store:
+            if page in wanted:
+                continue
+            task = self.tasks.pop(page, None)
+            if task:
+                task.cancel()
+            if page.paintable is not None:
+                page.paintable = None
+
+        for page in wanted:
+            if page.paintable is None and page.url and page not in self.tasks:
+                self.start_load(page)
+
+    def start_load(self, page):
+        task = asyncio.create_task(self.suwayomi.loadPage(page))
+        self.tasks[page] = task
+        task.add_done_callback(lambda done, page=page: self.forget_task(page, done))
+
+    def forget_task(self, page, task):
+        if self.tasks.get(page) is task:
+            del self.tasks[page]
 
     def zoom_to(self, value, x, y):
         value = max(ZOOM_MIN, min(ZOOM_MAX, value))

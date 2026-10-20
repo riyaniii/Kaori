@@ -1,0 +1,59 @@
+using Gtk 4.0;
+
+template $KaoriChapterRow : Gtk.Box {
+  orientation: vertical;
+  spacing: 6;
+  margin-start: 6;
+  margin-end: 6;
+  margin-top: 6;
+  margin-bottom: 6;
+  opacity: bind $get_opacity(template.model as <$KaoriChapter>.is_read) as <double>;
+
+  Gtk.Box {
+    orientation: horizontal;
+    spacing: 6;
+
+    Gtk.Label name {
+      styles [
+        "body"
+      ]
+      label: bind template.model as <$KaoriChapter> .name;
+      xalign: 0.0;
+      ellipsize: middle;
+      tooltip-text: bind template.model as <$KaoriChapter> .name;
+    }
+
+    Gtk.Image bookmarked {
+      icon-name: "starred-symbolic";
+      visible: bind template.model as <$KaoriChapter> .is_bookmarked;
+    }
+
+    Gtk.Image downloaded {
+      icon-name: "drive-harddisk-symbolic";
+      visible: bind template.model as <$KaoriChapter> .is_downloaded;
+    }
+  }
+
+  Gtk.CenterBox {
+    orientation: horizontal;
+
+    [start]
+    Gtk.Label date {
+      styles [
+        "body"
+      ]
+      label: bind $get_formatted_upload_date(template.model as <$KaoriChapter> .upload_date) as <string>;
+      xalign: 0.0;
+    }
+
+    [end]
+    Gtk.Label progress {
+      styles [
+        "body"
+      ]
+      label: bind $get_formatted_read_count(template.model as <$KaoriChapter>.last_page_read, template.model as <$KaoriChapter>.page_count) as <string>;
+      visible: bind $get_is_reading(template.model as <$KaoriChapter>.last_page_read) as <bool>;
+      xalign: 0.0;
+    }
+  }
+}

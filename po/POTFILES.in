@@ -4,5 +4,5 @@ data/io.github.riyaniii.Kaori.desktop.in
 data/io.github.riyaniii.Kaori.metainfo.xml.in
 data/io.github.riyaniii.Kaori.gschema.xml
 src/main.py
-src/window.py
-src/window.ui
+src/widgets/window.py
+src/widgets/window.blp

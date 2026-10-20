@@ -1,0 +1,40 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriCategoryPanel : Adw.Bin {
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      title-widget: Adw.WindowTitle {
+        title: _("Categories");
+      };
+
+      [end]
+      Gtk.Button {
+        icon-name: "document-edit-symbolic";
+        tooltip-text: _("Manage Categories");
+        clicked => $on_manage_clicked();
+      }
+    }
+
+    content: Gtk.ScrolledWindow {
+      hscrollbar-policy: never;
+      vexpand: true;
+
+      child: Gtk.ListView category_list {
+        styles [
+          "navigation-sidebar"
+        ]
+        single-click-activate: false;
+        activate => $on_activate();
+        width-request: 300;
+
+        factory: Gtk.SignalListItemFactory {
+          setup => $on_setup();
+          bind => $on_bind();
+          unbind => $on_unbind();
+        };
+      };
+    };
+  };
+}

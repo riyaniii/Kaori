@@ -1,0 +1,174 @@
+using Gtk 4.0;
+using Adw 1;
+using Gio 2.0;
+
+template $KaoriWindow : Adw.ApplicationWindow {
+  default-width: 1100;
+  default-height: 700;
+
+  Adw.Breakpoint {
+    condition ("max-width: 700sp")
+    setters {
+      main_split_view.collapsed: true;
+    }
+  }
+
+  content: Adw.OverlaySplitView overlay_split_view {
+    enable-show-gesture: true;
+    enable-hide-gesture: true;
+    collapsed: true;
+    sidebar-position: end;
+    sidebar: $KaoriChapterPanel chapter_panel {};
+
+    content: Adw.OverlaySplitView category_split_view {
+      collapsed: true;
+      show-sidebar: false;
+      enable-show-gesture: false;
+      sidebar-position: end;
+      min-sidebar-width: 240;
+      max-sidebar-width: 280;
+      sidebar: $KaoriCategoryPanel category_panel {};
+
+      content: Adw.NavigationView main_nav_view {
+        Adw.NavigationPage {
+          title: bind template.name;
+          child: Adw.OverlaySplitView main_split_view {
+            min-sidebar-width: 240;
+            max-sidebar-width: 260;
+
+            sidebar: Adw.ToolbarView {
+              [top]
+              Adw.HeaderBar header_bar {
+                title-widget: Adw.WindowTitle {
+                  title: bind template.name;
+                };
+                [end]
+                Gtk.MenuButton {
+                  styles [
+                    "flat"
+                  ]
+                  primary: true;
+                  icon-name: "open-menu-symbolic";
+                  popover: Gtk.PopoverMenu {
+                    menu-model: primary_menu;
+                  };
+                }
+              }
+
+              content: Adw.ViewSwitcherSidebar {
+                stack: main_stack;
+              };
+            };
+
+            content: Adw.ToastOverlay toast_overlay {
+              child: Adw.ViewStack main_stack {
+                Adw.ViewStackPage {
+                  name: "home";
+                  title: "Home";
+                  icon-name: "go-home-symbolic";
+                  child: Adw.NavigationView home_nav_view {
+                    Adw.NavigationPage {
+                      title: "Home";
+                      child: $KaoriHomePage {};
+                    }
+                  };
+                }
+
+                Adw.ViewStackPage {
+                  name: "library";
+                  title: "Library";
+                  icon-name: "library-symbolic";
+                  child: Adw.NavigationView library_nav_view {
+                    Adw.NavigationPage {
+                      title: "Library";
+                      child: $KaoriLibraryPage {};
+                    }
+                  };
+                }
+
+                Adw.ViewStackPage {
+                  name: "search";
+                  title: "Search";
+                  icon-name: "system-search-symbolic";
+                  child: Adw.NavigationView search_nav_view {
+                    Adw.NavigationPage {
+                      title: "Search";
+                      child: $KaoriSearchPage {};
+                    }
+                  };
+                }
+
+                Adw.ViewStackPage {
+                  name: "history";
+                  title: "History";
+                  icon-name: "sand-watch-symbolic";
+                  child: Adw.NavigationView history_nav_view {
+                    Adw.NavigationPage {
+                      title: "History";
+                      child: $KaoriHistoryPage {};
+                    }
+                  };
+                }
+
+                Adw.ViewStackPage {
+                  name: "browse";
+                  title: "Browse";
+                  icon-name: "lifebuoy-symbolic";
+                  child: Adw.NavigationView browse_nav_view {
+                    Adw.NavigationPage {
+                      title: "Browse";
+                      child: $KaoriBrowsePage {};
+                    }
+                  };
+                }
+
+                Adw.ViewStackPage {
+                  name: "updates";
+                  title: "Updates";
+                  icon-name: "star-arrow-symbolic";
+                  child: Adw.NavigationView updates_nav_view {
+                    Adw.NavigationPage {
+                      title: "Updates";
+                      child: $KaoriUpdatesPage {};
+                    }
+                  };
+                }
+
+                Adw.ViewStackPage {
+                  name: "downloads";
+                  title: "Downloads";
+                  icon-name: "folder-download-symbolic";
+                  badge-number: bind (template.downloads as <Gio.ListStore>).n-items;
+                  needs-attention: bind template.downloading;
+                  child: Adw.NavigationView downloads_nav_view {
+                    Adw.NavigationPage {
+                      title: "Downloads";
+                      child: $KaoriDownloadsPage {};
+                    }
+                  };
+                }
+              };
+            };
+          };
+        }
+      };
+    };
+  };
+}
+
+menu primary_menu {
+  section {
+    item {
+      label: _("Preferences");
+      action: "app.preferences";
+    }
+    item {
+      label: _("Shortcuts & Gestures");
+      action: "app.shortcuts";
+    }
+    item {
+      label: _("About Kaori");
+      action: "app.about";
+    }
+  }
+}

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresource>
+  <file alias="search/page.ui">widgets/search/page.ui</file>
+</gresource>

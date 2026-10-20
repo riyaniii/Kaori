@@ -1,0 +1,183 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriSetupWindow : Adw.ApplicationWindow {
+  default-width: 450;
+  default-height: 600;
+  resizable: false;
+
+  content: Adw.ToolbarView toolbar {
+    reveal-bottom-bars: false;
+
+    [top]
+    Adw.HeaderBar {
+      show-title: false;
+    }
+
+    content: Adw.Carousel carousel {
+      interactive: false;
+      notify::position => $on_position_changed();
+
+      Adw.StatusPage status_page {
+        hexpand: true;
+        icon-name: "network-server-symbolic";
+        title: "Connect to Suwayomi";
+        description: "Run Suwayomi locally or connect to an existing server";
+
+        child: Adw.Clamp {
+          maximum-size: 340;
+
+          child: Gtk.ListBox mode_list {
+            styles ["boxed-list"]
+            selection-mode: none;
+
+            Adw.ActionRow local_row {
+              title: "Run Locally";
+              subtitle: "A Suwayomi Server managed by the app";
+              activatable: true;
+              activated => $on_local_activated();
+
+              [suffix]
+              Gtk.Image {
+                icon-name: "go-next-symbolic";
+              }
+            }
+
+            Adw.ActionRow remote_row {
+              title: "Remote Server";
+              subtitle: "Connect to an external server with its URL";
+              activatable: true;
+              activated => $on_remote_activated();
+
+              [suffix]
+              Gtk.Image {
+                icon-name: "go-next-symbolic";
+              }
+            }
+          };
+        };
+      }
+
+      Adw.StatusPage repo_page {
+        hexpand: true;
+        styles ["compact"]
+        icon-name: "folder-download-symbolic";
+        title: "Add an Extension Repo";
+        description: "Kaori doesn't come with any sources. In Preferences, go to Library and add a repo under Extension Stores.";
+      }
+
+      Adw.StatusPage extensions_page {
+        hexpand: true;
+        styles ["compact"]
+        icon-name: "application-x-addon-symbolic";
+        title: "Install Extensions";
+        description: "Install the extensions for the sources you want. Kaori works with Mihon sources, so the Mihon guide is a good place to start.";
+
+        child: Gtk.Button {
+          styles ["pill"]
+          label: "Open Mihon Guide";
+          halign: center;
+          clicked => $on_guide();
+        };
+      }
+
+      Adw.StatusPage local_page {
+        hexpand: true;
+        styles ["compact"]
+        icon-name: "drive-removable-media-symbolic";
+        title: "Add Local Comics";
+        description: "Put each comic in its own folder inside the local source folder, with a folder or a CBZ for every chapter and a cover.jpg for a cover. You can pick a different folder below.";
+
+        child: Gtk.Box {
+          orientation: vertical;
+          spacing: 12;
+
+          Adw.Clamp {
+            maximum-size: 340;
+
+            child: Gtk.ListBox {
+              styles ["boxed-list"]
+              selection-mode: none;
+
+              Adw.ActionRow folder_row {
+                styles ["property"]
+                title: "Local Source Folder";
+                activatable: true;
+                activated => $on_path_activated();
+
+                [suffix]
+                Gtk.Button {
+                  styles ["flat"]
+                  valign: center;
+                  icon-name: "edit-clear-symbolic";
+                  tooltip-text: "Use Default";
+                  clicked => $on_path_cleared();
+                }
+
+                [suffix]
+                Gtk.Button {
+                  styles ["flat"]
+                  valign: center;
+                  icon-name: "folder-open-symbolic";
+                  tooltip-text: "Open Folder";
+                  clicked => $on_open_folder();
+                }
+              }
+            };
+          }
+
+          Gtk.Button {
+            styles ["pill"]
+            label: "Local Source Guide";
+            halign: center;
+            clicked => $on_local_guide();
+          }
+        };
+      }
+
+      Adw.StatusPage done_page {
+        hexpand: true;
+        styles ["compact"]
+        icon-name: "circle-check-cross-symbolic";
+        title: "You're All Set";
+        description: "Enjoy reading with Kaori. If you like it, consider supporting development.";
+
+        child: Gtk.Button {
+          styles ["pill"]
+          label: "Buy Me a Coffee";
+          halign: center;
+          clicked => $on_donate();
+        };
+      }
+    };
+
+    [bottom]
+    Gtk.CenterBox {
+      margin-start: 12;
+      margin-end: 12;
+      margin-top: 6;
+      margin-bottom: 12;
+
+      [start]
+      Gtk.Button back_button {
+        styles ["flat"]
+        label: "Back";
+        valign: center;
+        clicked => $on_back();
+      }
+
+      [center]
+      Adw.CarouselIndicatorDots {
+        carousel: carousel;
+      }
+
+      [end]
+      Gtk.Button next_button {
+        styles ["suggested-action", "pill"]
+        label: "Next";
+        valign: center;
+        clicked => $on_next();
+      }
+    }
+  };
+}

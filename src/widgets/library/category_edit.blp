@@ -1,0 +1,70 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriCategoryEditDialog: Adw.Dialog {
+  title: _("Edit Categories");
+  content-width: 360;
+
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {}
+
+    content: Gtk.Stack stack {
+      Gtk.StackPage {
+        name: "list";
+
+        child: Gtk.ScrolledWindow {
+          propagate-natural-height: true;
+          max-content-height: 500;
+
+          child: Adw.Clamp {
+            maximum-size: 400;
+
+            child: Gtk.Box {
+              orientation: vertical;
+              spacing: 16;
+              margin-start: 12;
+              margin-end: 12;
+              margin-top: 12;
+              margin-bottom: 12;
+
+              Adw.PreferencesGroup group {}
+
+              Gtk.Button {
+                label: _("Save");
+                halign: center;
+                clicked => $on_save_clicked();
+
+                styles [
+                  "suggested-action",
+                  "pill",
+                ]
+              }
+            };
+          };
+        };
+      }
+
+      Gtk.StackPage {
+        name: "empty";
+
+        child: Adw.StatusPage {
+          icon-name: "folder-symbolic";
+          title: _("No Categories");
+          description: _("Create a category to organize your library.");
+
+          child: Gtk.Button {
+            label: _("Manage Categories");
+            halign: center;
+            clicked => $on_manage_clicked();
+
+            styles [
+              "suggested-action",
+              "pill",
+            ]
+          };
+        };
+      }
+    };
+  };
+}

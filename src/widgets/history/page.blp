@@ -1,0 +1,111 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriHistoryPage : Adw.NavigationPage {
+  title: _("History");
+  tag: "history";
+
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {}
+
+    content: Gtk.Stack {
+      transition-type: crossfade;
+      visible-child-name: bind template.state;
+
+      Gtk.StackPage {
+        name: "loading";
+
+        child: Gtk.Spinner {
+          spinning: true;
+          halign: center;
+          valign: center;
+          width-request: 32;
+          height-request: 32;
+        };
+      }
+
+      Gtk.StackPage {
+        name: "empty";
+
+        child: Adw.StatusPage {
+          icon-name: "sand-watch-symbolic";
+          title: _("No history yet");
+          description: _("Chapters you read will show up here");
+        };
+      }
+
+      Gtk.StackPage {
+        name: "error";
+
+        child: Adw.StatusPage {
+          icon-name: "dialog-error-symbolic";
+          title: _("Couldn't load history");
+          description: bind template.error_message;
+
+          child: Gtk.Button {
+            label: _("Try Again");
+            halign: center;
+            css-classes: ["pill", "suggested-action"];
+            clicked => $on_retry_clicked();
+          };
+        };
+      }
+
+      Gtk.StackPage {
+        name: "list";
+
+        child: Gtk.Box {
+          orientation: vertical;
+
+          Gtk.ScrolledWindow scrolled {
+            vexpand: true;
+            hscrollbar-policy: never;
+            edge-reached => $on_edge_reached();
+
+            child: Gtk.ListView {
+              styles [
+                "navigation-sidebar"
+              ]
+              margin-start: 12;
+              margin-end: 12;
+              single-click-activate: true;
+              activate => $on_activate();
+
+              model: Gtk.NoSelection {
+                model: Gtk.SortListModel {
+                  section-sorter: Gtk.NumericSorter {
+                    expression: expr item as <$KaoriHistoryEntry>.day_number;
+                    sort-order: descending;
+                  };
+
+                  model: bind template.entries;
+                };
+              };
+
+              factory: Gtk.SignalListItemFactory {
+                setup => $on_setup();
+                bind => $on_bind();
+                unbind => $on_unbind();
+              };
+
+              header-factory: Gtk.SignalListItemFactory {
+                setup => $on_header_setup();
+                bind => $on_header_bind();
+              };
+            };
+          }
+
+          Gtk.Spinner {
+            spinning: true;
+            halign: center;
+            margin-bottom: 12;
+            width-request: 24;
+            height-request: 24;
+            visible: bind template.loading_more;
+          }
+        };
+      }
+    };
+  };
+}

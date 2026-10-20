@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresource>
+  <file alias="manga/card.ui">widgets/manga/card.ui</file>
+  <file alias="manga/overview.ui">widgets/manga/overview.ui</file>
+  <file alias="manga/page.ui">widgets/manga/page.ui</file>
+</gresource>

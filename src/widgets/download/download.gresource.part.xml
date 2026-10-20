@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresource>
+  <file alias="download/page.ui">widgets/download/page.ui</file>
+  <file alias="download/dialog.ui">widgets/download/dialog.ui</file>
+  <file alias="download/row.ui">widgets/download/row.ui</file>
+</gresource>

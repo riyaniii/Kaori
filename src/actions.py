@@ -1,7 +1,6 @@
-from gi.repository import Adw, Gtk
+from gi.repository import Adw
 
 from . import widgets as Widgets
-from .constants import GUIDE_URL, NAME, WELCOME_BODY
 
 
 def get_window(app):
@@ -38,23 +37,6 @@ def show_toast(app, message: str):
     toast_overlay.add_toast(Adw.Toast(title=message, timeout=1, use_markup=False))
 
 
-def on_welcome_response(dialog, response, app):
-    app.settings.set_boolean('welcome-shown', True)
-    if response == "guide":
-        Gtk.UriLauncher(uri=GUIDE_URL).launch(get_window(app), None, None)
-
-
-def show_welcome(app):
-    dialog = Adw.AlertDialog(heading=f"Welcome to {NAME}", body=WELCOME_BODY)
-    dialog.add_response("close", "Got It")
-    dialog.add_response("guide", "Open Guide")
-    dialog.set_response_appearance("guide", Adw.ResponseAppearance.SUGGESTED)
-    dialog.set_default_response("guide")
-    dialog.set_close_response("close")
-    dialog.connect("response", on_welcome_response, app)
-    show_dialog(app, dialog)
-
-
 def toggle_chapter_panel(app):
     window = get_window(app)
     stack_page = window.main_stack.get_visible_child().get_visible_page()
@@ -65,6 +47,15 @@ def toggle_chapter_panel(app):
 
     split_view = window.overlay_split_view
     split_view.set_show_sidebar(not split_view.get_show_sidebar())
+
+
+def edit_categories(app, manga_id: int):
+    model = app.suwayomi.getModel(manga_id, 'Manga')
+    get_window(app).category_panel.edit_categories(model)
+
+
+def manage_categories(app):
+    get_window(app).category_panel.manage_categories()
 
 
 async def set_chapters(app, manga_id: int):

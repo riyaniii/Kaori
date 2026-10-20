@@ -25,6 +25,10 @@
   font-weight: 550;
 }
 
+.r5 {
+  border-radius: 5px;
+}
+
 .rounded {
   border-radius: 9px;
 }
@@ -78,4 +82,23 @@ popover {
     var(--window-bg-color) 0%,
     transparent 100%
   );
+}
+
+.badge {
+  background: var(--accent-bg-color);
+  color: var(--accent-fg-color);
+  border-radius: 5px;
+
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 3px;
+  padding-right: 3px;
+
+  font-size: smaller;
+  font-weight: bold;
+  min-width: 1rem;
+}
+
+.category-button {
+  font-weight: normal;
 }

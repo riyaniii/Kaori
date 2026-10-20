@@ -1,4 +1,4 @@
-from gi.repository import Gtk, Adw, Gio, GLib, GObject
+from gi.repository import Gtk, Adw, GLib, GObject
 
 from ...integrations import models
 
@@ -12,9 +12,6 @@ class ChapterPanel(Adw.NavigationPage):
     stack = Gtk.Template.Child()
 
     manga_model = GObject.Property(type=models.Manga)
-
-    widget = ChapterRow
-    model = models.Chapter
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -30,7 +27,7 @@ class ChapterPanel(Adw.NavigationPage):
 
     def on_setup(self, factory, list_item):
         list_item.set_activatable(True)
-        list_item.set_child(self.widget())
+        list_item.set_child(ChapterRow())
 
     def on_bind(self, factory, list_item):
         list_item.get_child().model = list_item.get_item()

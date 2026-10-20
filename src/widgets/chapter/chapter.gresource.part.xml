@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresource>
+  <file alias="chapter/row.ui">widgets/chapter/row.ui</file>
+  <file alias="chapter/panel.ui">widgets/chapter/panel.ui</file>
+</gresource>

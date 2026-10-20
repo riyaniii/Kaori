@@ -1,4 +1,4 @@
-from gi.repository import Gtk, Adw, Gio, GObject
+from gi.repository import Gtk, GObject
 
 from ...integrations import models
 
@@ -11,3 +11,9 @@ class SourceCard(Gtk.Box):
     def __init__(self, model=None):
         super().__init__()
         self.model = model
+
+    @Gtk.Template.Callback()
+    def get_subtitle(self, obj, is_nsfw):
+        if is_nsfw:
+            return "18+"
+        return "Everyone"

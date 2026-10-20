@@ -1,11 +1,14 @@
 from gql import gql
 
 CHAPTER_FIELDS = {
+    'mangaId': 'manga_id',
     'sourceOrder': 'source_order',
     'chapterNumber': 'chapter_number',
     'name': 'name',
     'pageCount': 'page_count',
     'uploadDate': 'upload_date',
+    'fetchedAt': 'fetched_at',
+    'lastReadAt': 'last_read_at',
     'isBookmarked': 'is_bookmarked',
     'isDownloaded': 'is_downloaded',
     'isRead': 'is_read',
@@ -52,19 +55,39 @@ SERVER_SETTINGS = (
 )
 SERVER_SETTINGS_FIELDS = "\n".join(SERVER_SETTINGS)
 
-MANGA_CORE_FIELDS = """
-  id
-  title
-  author
-  artist
-  description
-  genre
-  status
-  initialized
-  inLibrary
-  unreadCount
-  realUrl
-  thumbnailUrl
+MANGA_FIELDS = {
+    'title': 'title',
+    'author': 'author',
+    'artist': 'artist',
+    'description': 'description',
+    'genre': 'genre',
+    'status': 'status',
+    'initialized': 'initialized',
+    'inLibrary': 'in_library',
+    'unreadCount': 'unread_count',
+    'realUrl': 'real_url',
+    'thumbnailUrl': 'thumbnail_url',
+}
+MANGA_CORE_FIELDS = "id\n" + "\n".join(MANGA_FIELDS)
+
+MANGA_LIBRARY_FIELDS = {
+    'inLibraryAt': 'in_library_at',
+    'bookmarkCount': 'bookmark_count',
+    'downloadCount': 'download_count',
+    'hasDuplicateChapters': 'has_duplicate_chapters',
+    'sourceId': 'source_id',
+}
+
+MANGA_CHAPTER_LINKS = {
+    'firstUnreadChapter': 'first_unread_chapter',
+    'lastReadChapter': 'last_read_chapter',
+    'latestFetchedChapter': 'latest_fetched_chapter',
+    'latestUploadedChapter': 'latest_uploaded_chapter',
+}
+
+MANGA_LIBRARY_QUERY = "\n".join(MANGA_LIBRARY_FIELDS) + """
+  latestFetchedChapter { id fetchedAt }
+  latestUploadedChapter { id uploadDate }
 """
 
 GET_LIBRARY = gql("""
@@ -73,8 +96,9 @@ query GetLibrary {
     nodes {
       """ + MANGA_CORE_FIELDS + """
       firstUnreadChapter { id sourceOrder }
-      lastReadChapter { id sourceOrder }
+      lastReadChapter { id sourceOrder lastReadAt }
       chapters { totalCount }
+      """ + MANGA_LIBRARY_QUERY + """
     }
   }
 }
@@ -132,20 +156,9 @@ mutation RemoveExtensionStore($indexUrl: String!) {
 }
 """)
 
-GET_EXTENSIONS = gql("""
-query GetExtensions($first: Int, $after: Cursor) {
-  extensions(first: $first, after: $after) {
-    nodes {
-      """ + EXTENSION_FULL_FIELDS + """
-    }
-    pageInfo { hasNextPage endCursor }
-  }
-}
-""")
-
 GET_SOURCES = gql("""
-query GetSources($first: Int, $after: Cursor) {
-  sources(first: $first, after: $after) {
+query GetSources {
+  sources {
     nodes {
       id
       name
@@ -158,7 +171,6 @@ query GetSources($first: Int, $after: Cursor) {
         name
       }
     }
-    pageInfo { hasNextPage endCursor }
   }
 }
 """)
@@ -179,14 +191,59 @@ mutation FetchMangaAndChapters($id: Int!, $fetchManga: Boolean!, $fetchChapters:
 """)
 
 GET_CHAPTERS_MANGA = gql("""
-query GetChaptersManga($mangaId: Int!, $first: Int, $after: Cursor) {
-  chapters(condition: { mangaId: $mangaId }, first: $first, after: $after) {
+query GetChaptersManga($mangaId: Int!) {
+  chapters(condition: { mangaId: $mangaId }) {
     nodes {
       """ + CHAPTER_FULL_FIELDS + """
     }
-    pageInfo { hasNextPage endCursor }
     totalCount
   }
+}
+""")
+
+CHAPTER_FEED_FIELDS = CHAPTER_FULL_FIELDS + """
+manga {
+  """ + MANGA_CORE_FIELDS + """
+  firstUnreadChapter { id }
+  lastReadChapter { id }
+}
+"""
+
+GET_RECENTLY_READ_CHAPTERS = gql("""
+query GetRecentlyReadChapters($first: Int, $offset: Int) {
+  chapters(
+    filter: { lastReadAt: { greaterThan: "0" } }
+    order: [{ by: LAST_READ_AT, byType: DESC }]
+    first: $first
+    offset: $offset
+  ) {
+    nodes {
+      """ + CHAPTER_FEED_FIELDS + """
+    }
+    pageInfo { hasNextPage }
+  }
+}
+""")
+
+GET_RECENTLY_UPDATED_CHAPTERS = gql("""
+query GetRecentlyUpdatedChapters($first: Int, $offset: Int) {
+  chapters(
+    filter: { inLibrary: { equalTo: true } }
+    order: [{ by: FETCHED_AT, byType: DESC }, { by: SOURCE_ORDER, byType: DESC }]
+    first: $first
+    offset: $offset
+  ) {
+    nodes {
+      """ + CHAPTER_FEED_FIELDS + """
+    }
+    pageInfo { hasNextPage }
+  }
+}
+""")
+
+GET_LAST_UPDATE_TIMESTAMP = gql("""
+query GetLastUpdateTimestamp {
+  lastUpdateTimestamp { timestamp }
 }
 """)
 
@@ -421,6 +478,56 @@ mutation SetServerSettings($settings: PartialSettingsTypeInput!) {
     settings {
       """ + SERVER_SETTINGS_FIELDS + """
     }
+  }
+}
+""")
+
+SET_MANGA_CATEGORIES = gql("""
+mutation SetMangaCategories($id: Int!, $add: [Int!], $remove: [Int!]) {
+  updateMangaCategories(
+    input: { id: $id, patch: { addToCategories: $add, removeFromCategories: $remove } }
+  ) {
+    manga { id }
+  }
+}
+""")
+
+CREATE_CATEGORY = gql("""
+mutation CreateCategory($name: String!) {
+  createCategory(input: { name: $name }) {
+    category { id }
+  }
+}
+""")
+
+UPDATE_CATEGORY = gql("""
+mutation UpdateCategory($id: Int!, $name: String!) {
+  updateCategory(input: { id: $id, patch: { name: $name } }) {
+    category { id name }
+  }
+}
+""")
+
+DELETE_CATEGORY = gql("""
+mutation DeleteCategory($id: Int!) {
+  deleteCategory(input: { categoryId: $id }) {
+    category { id }
+  }
+}
+""")
+
+REORDER_CATEGORY = gql("""
+mutation ReorderCategory($id: Int!, $position: Int!) {
+  updateCategoryOrder(input: { id: $id, position: $position }) {
+    categories { id order }
+  }
+}
+""")
+
+SET_CATEGORY_DEFAULT = gql("""
+mutation SetCategoryDefault($id: Int!, $default: Boolean!) {
+  updateCategory(input: { id: $id, patch: { default: $default } }) {
+    category { id default }
   }
 }
 """)

@@ -1,63 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<gresources>
+<gresources xmlns:xi="http://www.w3.org/2001/XInclude">
   <gresource prefix="/io/github/riyaniii/Kaori">
     <file>style.css</file>
+    <file>icons/chain-link-symbolic.svg</file>
     <file>icons/compass-symbolic.svg</file>
-    <file>icons/library-symbolic.svg</file>
+    <file>icons/drive-harddisk-symbolic.svg</file>
+    <file>icons/filter-symbolic.svg</file>
     <file>icons/heart-filled-symbolic.svg</file>
     <file>icons/heart-outline-thick-symbolic.svg</file>
-    <file>icons/filter-symbolic.svg</file>
+    <file>icons/keys-symbolic.svg</file>
+    <file>icons/library-symbolic.svg</file>
+    <file>icons/lifebuoy-symbolic.svg</file>
     <file>icons/network-server-symbolic.svg</file>
-    <file>icons/drive-harddisk-symbolic.svg</file>
+    <file>icons/panel-right-symbolic.svg</file>
+    <file>icons/sand-watch-symbolic.svg</file>
+    <file>icons/sliders-horizontal-symbolic.svg</file>
+    <file>icons/sprout-symbolic.svg</file>
+    <file>icons/star-arrow-symbolic.svg</file>
+    <file>icons/translate-symbolic.svg</file>
+    <file>icons/up-symbolic.svg</file>
     <file>icons/view-sort-ascending-rtl-symbolic.svg</file>
     <file>icons/view-sort-descending-rtl-symbolic.svg</file>
-    <file>icons/sprout-symbolic.svg</file>
-    <file>icons/sliders-horizontal-symbolic.svg</file>
-    <file>icons/up-symbolic.svg</file>
-    <file>icons/panel-right-symbolic.svg</file>
-    <file>icons/translate-symbolic.svg</file>
-    <file>icons/keys-symbolic.svg</file>
-    <file>icons/chain-link-symbolic.svg</file>
+    <file>icons/view-grid-symbolic.svg</file>
+    <file>icons/circle-check-cross-symbolic.svg</file>
+    <file>icons/drive-removable-media-symbolic.svg</file>
 
-    <file alias="window.ui">ui/window.ui</file>
-    <file alias="setup.ui">ui/setup.ui</file>
-    <file alias="shortcuts.ui">ui/shortcuts.ui</file>
-    <file alias="preferences/preferences.ui">ui/preferences/preferences.ui</file>
-    <file alias="preferences/extension_stores.ui">ui/preferences/extension_stores.ui</file>
-
-    <file alias="pages/home.ui">ui/pages/home.ui</file>
-    <file alias="pages/library.ui">ui/pages/library.ui</file>
-    <file alias="pages/search.ui">ui/pages/search.ui</file>
-    <file alias="pages/browse.ui">ui/pages/browse.ui</file>
-    <file alias="pages/sources.ui">ui/pages/sources.ui</file>
-    <file alias="pages/extensions.ui">ui/pages/extensions.ui</file>
-
-    <file alias="manga/card.ui">ui/manga/card.ui</file>
-    <file alias="manga/overview.ui">ui/manga/overview.ui</file>
-    <file alias="manga/page.ui">ui/manga/page.ui</file>
-
-    <file alias="chapter/row.ui">ui/chapter/row.ui</file>
-    <file alias="chapter/panel.ui">ui/chapter/panel.ui</file>
-
-    <file alias="source/card.ui">ui/source/card.ui</file>
-    <file alias="source/page.ui">ui/source/page.ui</file>
-    <file alias="source/filter.ui">ui/source/filter.ui</file>
-
-    <file alias="extension/card.ui">ui/extension/card.ui</file>
-    <file alias="extension/dialog.ui">ui/extension/dialog.ui</file>
-
-    <file alias="download/page.ui">ui/download/page.ui</file>
-    <file alias="download/row.ui">ui/download/row.ui</file>
-
-    <file alias="containers/manga_grid.ui">ui/containers/manga_grid.ui</file>
-    <file alias="containers/row.ui">ui/containers/row.ui</file>
-
-    <file alias="reader/page.ui">ui/reader/page.ui</file>
-    <file alias="reader/dialog.ui">ui/reader/dialog.ui</file>
-    <file alias="reader/single.ui">ui/reader/single.ui</file>
-    <file alias="reader/double.ui">ui/reader/double.ui</file>
-    <file alias="reader/webtoon.ui">ui/reader/webtoon.ui</file>
-
+    <xi:include href="widgets/widgets.gresource.part.xml" xpointer="xpointer(/gresource/*)"/>
+    <xi:include href="widgets/preferences/preferences.gresource.part.xml" xpointer="xpointer(/gresource/*)"/>
+    <xi:include href="widgets/home/home.gresource.part.xml" xpointer="xpointer(/gresource/*)"/>
+    <xi:include href="widgets/browse/browse.gresource.part.xml" xpointer="xpointer(/gresource/*)"/>
+    <xi:include href="widgets/source/source.gresource.part.xml" xpointer="xpointer(/gresource/*)"/>
+    <xi:include href="widgets/extension/extension.gresource.part.xml" xpointer="xpointer(/gresource/*)"/>
+    <xi:include href="widgets/library/library.gresource.part.xml" xpointer="xpointer(/gresource/*)"/>
+    <xi:include href="widgets/search/search.gresource.part.xml" xpointer="xpointer(/gresource/*)"/>
+    <xi:include href="widgets/history/history.gresource.part.xml" xpointer="xpointer(/gresource/*)"/>
+    <xi:include href="widgets/updates/updates.gresource.part.xml" xpointer="xpointer(/gresource/*)"/>
+    <xi:include href="widgets/manga/manga.gresource.part.xml" xpointer="xpointer(/gresource/*)"/>
+    <xi:include href="widgets/chapter/chapter.gresource.part.xml" xpointer="xpointer(/gresource/*)"/>
+    <xi:include href="widgets/download/download.gresource.part.xml" xpointer="xpointer(/gresource/*)"/>
+    <xi:include href="widgets/containers/containers.gresource.part.xml" xpointer="xpointer(/gresource/*)"/>
+    <xi:include href="widgets/reader/reader.gresource.part.xml" xpointer="xpointer(/gresource/*)"/>
   </gresource>
 </gresources>
-

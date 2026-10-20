@@ -1,0 +1,329 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriLibraryPage : Adw.NavigationPage {
+  title: "Library";
+  tag: "library";
+
+  child: Gtk.Stack {
+    transition-type: crossfade;
+    visible-child-name: bind $get_page(template.library_size) as <string>;
+
+    Gtk.StackPage {
+      name: "greeter";
+      child: Adw.ToolbarView {
+        extend-content-to-top-edge: true;
+
+        [top]
+        Adw.HeaderBar {}
+
+        content: Adw.StatusPage {
+          icon-name: "library-symbolic";
+          title: _("Add some manga into the library");
+          description: _("Find mangas from the search and browse pages");
+        };
+      };
+    }
+
+    Gtk.StackPage {
+      name: "grid";
+      child: Adw.ToolbarView {
+        [top]
+        Adw.HeaderBar {
+          title-widget: Gtk.SearchEntry {
+            hexpand: true;
+            placeholder-text: _("Find a manga");
+            search-changed => $on_search_changed();
+          };
+
+          [start]
+          Gtk.Button {
+            icon-name: "filter-symbolic";
+            tooltip-text: _("Sort and Filter");
+            clicked => $on_options_clicked();
+          }
+
+          [end]
+          Gtk.ToggleButton category_button {
+            icon-name: "view-grid-symbolic";
+            tooltip-text: _("Categories");
+            action-name: "win.show-categories";
+          }
+        }
+
+        content: $KaoriMangaGrid manga_grid {};
+      };
+    }
+  };
+}
+
+Adw.PreferencesDialog options_dialog {
+  title: _("Sort & Filter");
+
+  Adw.PreferencesPage {
+    title: _("Sort");
+    icon-name: "view-sort-descending-symbolic";
+
+    Adw.PreferencesGroup {
+      title: _("Sort by");
+
+      Adw.ActionRow {
+        title: _("Unread chapters");
+        activatable-widget: sort_unread;
+
+        [prefix]
+        Gtk.CheckButton sort_unread {
+          valign: center;
+          action-name: "library.sort-key";
+          action-target: "'unread'";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Total chapters");
+        activatable-widget: sort_total;
+
+        [prefix]
+        Gtk.CheckButton sort_total {
+          valign: center;
+          group: sort_unread;
+          action-name: "library.sort-key";
+          action-target: "'total'";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("A–Z");
+        activatable-widget: sort_alphabetical;
+
+        [prefix]
+        Gtk.CheckButton sort_alphabetical {
+          valign: center;
+          group: sort_unread;
+          action-name: "library.sort-key";
+          action-target: "'alphabetical'";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Recently added");
+        activatable-widget: sort_added;
+
+        [prefix]
+        Gtk.CheckButton sort_added {
+          valign: center;
+          group: sort_unread;
+          action-name: "library.sort-key";
+          action-target: "'added'";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Recently read");
+        activatable-widget: sort_read;
+
+        [prefix]
+        Gtk.CheckButton sort_read {
+          valign: center;
+          group: sort_unread;
+          action-name: "library.sort-key";
+          action-target: "'read'";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Latest fetched chapter");
+        activatable-widget: sort_fetched;
+
+        [prefix]
+        Gtk.CheckButton sort_fetched {
+          valign: center;
+          group: sort_unread;
+          action-name: "library.sort-key";
+          action-target: "'fetched'";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Latest uploaded chapter");
+        activatable-widget: sort_uploaded;
+
+        [prefix]
+        Gtk.CheckButton sort_uploaded {
+          valign: center;
+          group: sort_unread;
+          action-name: "library.sort-key";
+          action-target: "'uploaded'";
+        }
+      }
+    }
+
+    Adw.PreferencesGroup {
+      Adw.ActionRow {
+        title: _("Reverse order");
+        activatable-widget: reverse_switch;
+
+        [suffix]
+        Gtk.Switch reverse_switch {
+          valign: center;
+          action-name: "library.reverse";
+        }
+      }
+    }
+  }
+
+  Adw.PreferencesPage {
+    title: _("Filter");
+    icon-name: "filter-symbolic";
+
+    Adw.PreferencesGroup {
+      title: _("Show only");
+
+      Adw.ActionRow {
+        title: _("Unread");
+        activatable-widget: unread_switch;
+
+        [suffix]
+        Gtk.Switch unread_switch {
+          valign: center;
+          action-name: "library.filter-unread";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Started");
+        activatable-widget: started_switch;
+
+        [suffix]
+        Gtk.Switch started_switch {
+          valign: center;
+          action-name: "library.filter-started";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Downloaded");
+        activatable-widget: downloaded_switch;
+
+        [suffix]
+        Gtk.Switch downloaded_switch {
+          valign: center;
+          action-name: "library.filter-downloaded";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Bookmarked");
+        activatable-widget: bookmarked_switch;
+
+        [suffix]
+        Gtk.Switch bookmarked_switch {
+          valign: center;
+          action-name: "library.filter-bookmarked";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Duplicate chapters");
+        activatable-widget: duplicates_switch;
+
+        [suffix]
+        Gtk.Switch duplicates_switch {
+          valign: center;
+          action-name: "library.filter-duplicates";
+        }
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Status");
+      description: _("Pick none to show every status");
+
+      Adw.ActionRow {
+        title: _("Cancelled");
+        activatable-widget: cancelled_switch;
+
+        [suffix]
+        Gtk.Switch cancelled_switch {
+          valign: center;
+          action-name: "library.status-cancelled";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Completed");
+        activatable-widget: completed_switch;
+
+        [suffix]
+        Gtk.Switch completed_switch {
+          valign: center;
+          action-name: "library.status-completed";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Licensed");
+        activatable-widget: licensed_switch;
+
+        [suffix]
+        Gtk.Switch licensed_switch {
+          valign: center;
+          action-name: "library.status-licensed";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Ongoing");
+        activatable-widget: ongoing_switch;
+
+        [suffix]
+        Gtk.Switch ongoing_switch {
+          valign: center;
+          action-name: "library.status-ongoing";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Hiatus");
+        activatable-widget: hiatus_switch;
+
+        [suffix]
+        Gtk.Switch hiatus_switch {
+          valign: center;
+          action-name: "library.status-hiatus";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Publishing finished");
+        activatable-widget: finished_switch;
+
+        [suffix]
+        Gtk.Switch finished_switch {
+          valign: center;
+          action-name: "library.status-finished";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Unknown");
+        activatable-widget: unknown_switch;
+
+        [suffix]
+        Gtk.Switch unknown_switch {
+          valign: center;
+          action-name: "library.status-unknown";
+        }
+      }
+    }
+  }
+
+  Adw.PreferencesPage {
+    title: _("Source");
+    icon-name: "network-server-symbolic";
+
+    Adw.PreferencesGroup source_group {
+      title: _("Source");
+    }
+  }
+}

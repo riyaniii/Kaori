@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresource>
+  <file alias="reader/page.ui">widgets/reader/page.ui</file>
+  <file alias="reader/dialog.ui">widgets/reader/dialog.ui</file>
+  <file alias="reader/single.ui">widgets/reader/single.ui</file>
+  <file alias="reader/double.ui">widgets/reader/double.ui</file>
+  <file alias="reader/webtoon.ui">widgets/reader/webtoon.ui</file>
+</gresource>

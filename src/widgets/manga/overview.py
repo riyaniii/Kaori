@@ -1,13 +1,11 @@
-import asyncio
 import re
 
 from gi.repository import Gtk, Pango, GLib, GObject, Gio
 
 from ...integrations import models
 
-from .card import MangaCard
-
 CONTENT_LABELS = {"synopsis", "summary", "description", "plot", "overview", "story"}
+MAX_LENGTH = 600
 
 LABEL_LINE = re.compile(
     r'^(?:#{1,6}\s*)?'
@@ -57,11 +55,12 @@ def parse_label(raw_line: str) -> tuple[str | None, str]:
 def strip_labels(lines: list[str]) -> str:
     cleaned = []
     for line in lines:
-        _, rest = parse_label(line)
+        label, rest = parse_label(line)
         rest = strip_markdown_inline(strip_bullet(rest)).strip()
         if rest:
             cleaned.append(rest)
     return '\n'.join(cleaned).strip()
+
 
 def extract_meat(description: str) -> str:
     paragraphs = split_paragraphs(description)
@@ -112,19 +111,16 @@ class MangaOverview(Gtk.Box):
     def __init__(self, model):
         super().__init__()
         self.model = model
+        self.suwayomi = Gio.Application.get_default().suwayomi
         self.populate_genres()
+        self.thumbnail_task = self.suwayomi.startThumbnail(self.model)
 
-        if self.model.paintable is None and self.model.thumbnail_url:
-            self.suwayomi = Gio.Application.get_default().suwayomi
-            asyncio.create_task(self.load_thumbnail())
-
-    async def load_thumbnail(self):
-        paintable = await self.suwayomi.getPaintable(self.model.thumbnail_url)
-        if paintable:
-            self.model.paintable = paintable
+    def release(self):
+        self.suwayomi.stopThumbnail(self.model, self.thumbnail_task)
+        self.thumbnail_task = None
 
     def populate_genres(self):
-        for genre in self.model.genre[:6]:
+        for genre in (self.model.genre or [])[:6]:
             button = Gtk.Button(
                 child=Gtk.Label(
                     label=genre,
@@ -140,12 +136,11 @@ class MangaOverview(Gtk.Box):
 
         meat = extract_meat(description)
 
-        l = 600
-        if len(meat) <= l:
+        if len(meat) <= MAX_LENGTH:
             return meat
-        return meat[:l].rstrip() + "…"
+        return meat[:MAX_LENGTH].rstrip() + "…"
 
     @Gtk.Template.Callback()
-    def on_overview_clicked(self, *_args):
+    def on_overview_clicked(self, *args):
         manga_id = self.model.id
         self.activate_action("app.show_manga", GLib.Variant("i", manga_id))

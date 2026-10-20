@@ -1,0 +1,102 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriDownloadDialog : Adw.Dialog {
+  title: _("Download");
+  content-width: 420;
+  content-height: 600;
+
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {}
+
+    content: Adw.PreferencesPage {
+      Adw.PreferencesGroup {
+        title: _("Quick select");
+
+        Adw.WrapBox {
+          line-spacing: 6;
+          child-spacing: 6;
+
+          Gtk.Button preset_next {
+            label: _("Next");
+            clicked => $on_preset_clicked();
+          }
+
+          Gtk.Button preset_next_5 {
+            label: _("Next 5");
+            clicked => $on_preset_clicked();
+          }
+
+          Gtk.Button preset_next_10 {
+            label: _("Next 10");
+            clicked => $on_preset_clicked();
+          }
+
+          Gtk.Button preset_next_25 {
+            label: _("Next 25");
+            clicked => $on_preset_clicked();
+          }
+
+          Gtk.Button preset_unread {
+            label: _("Unread");
+            clicked => $on_preset_clicked();
+          }
+
+          Gtk.Button preset_all {
+            label: _("All");
+            clicked => $on_preset_clicked();
+          }
+        }
+      }
+
+      Adw.PreferencesGroup {
+        title: _("Range");
+
+        Adw.ComboRow from_row {
+          title: _("From chapter");
+          enable-search: true;
+          expression: expr item as <Gtk.StringObject>.string;
+          notify::selected => $on_from_changed();
+        }
+
+        Adw.ComboRow to_row {
+          title: _("To chapter");
+          enable-search: true;
+          expression: expr item as <Gtk.StringObject>.string;
+          notify::selected => $on_to_changed();
+        }
+
+        Adw.SwitchRow skip_read_row {
+          title: _("Skip read chapters");
+          notify::active => $on_skip_read_changed();
+        }
+      }
+
+      Adw.PreferencesGroup {
+        Adw.ActionRow summary_row {
+          title: _("Nothing to download");
+          subtitle: _("Chapters that are already downloaded are skipped");
+        }
+      }
+    };
+
+    [bottom]
+    Gtk.Box {
+      margin-start: 12;
+      margin-end: 12;
+      margin-top: 12;
+      margin-bottom: 12;
+
+      Gtk.Button download_button {
+        hexpand: true;
+        styles [
+          "suggested-action",
+          "pill"
+        ]
+        label: _("Download");
+        clicked => $on_download_clicked();
+      }
+    }
+  };
+}

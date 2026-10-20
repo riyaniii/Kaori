@@ -1,4 +1,6 @@
 import asyncio
+from gettext import gettext as _
+
 from gi.repository import Adw, Gio, GLib, GObject, Gtk, Pango
 
 from .row import DownloadRow
@@ -15,28 +17,26 @@ class DownloadsPage(Adw.NavigationPage):
         super().__init__()
         self.suwayomi = Gio.Application.get_default().suwayomi
         self.poll_id = 0
-        self.refreshing = False
 
         self.downloads = self.suwayomi.download_queue
         self.suwayomi.bind_property(
             "downloader-state", self, "downloader-state", GObject.BindingFlags.SYNC_CREATE,
         )
-        asyncio.create_task(self.refresh())
+        self.connect("map", self.on_map)
+        self.connect("unmap", self.on_unmap)
+
+    def on_map(self, page):
+        asyncio.create_task(self.suwayomi.getDownloadStatus())
         self.poll_id = GLib.timeout_add_seconds(1, self.on_poll)
 
+    def on_unmap(self, page):
+        if self.poll_id:
+            GLib.source_remove(self.poll_id)
+            self.poll_id = 0
 
     def on_poll(self):
-        asyncio.create_task(self.refresh())
+        asyncio.create_task(self.suwayomi.getDownloadStatus())
         return GLib.SOURCE_CONTINUE
-
-    async def refresh(self):
-        if self.refreshing:
-            return
-        self.refreshing = True
-        try:
-            await self.suwayomi.getDownloadStatus()
-        finally:
-            self.refreshing = False
 
     @Gtk.Template.Callback()
     def get_page(self, obj, count):
@@ -44,11 +44,15 @@ class DownloadsPage(Adw.NavigationPage):
 
     @Gtk.Template.Callback()
     def get_toggle_icon(self, obj, state):
-        return "media-playback-pause-symbolic" if state == "STARTED" else "media-playback-start-symbolic"
+        if state == "STARTED":
+            return "media-playback-pause-symbolic"
+        return "media-playback-start-symbolic"
 
     @Gtk.Template.Callback()
     def get_toggle_tooltip(self, obj, state):
-        return "Pause downloads" if state == "STARTED" else "Start downloads"
+        if state == "STARTED":
+            return _("Pause downloads")
+        return _("Start downloads")
 
     @Gtk.Template.Callback()
     def on_setup(self, factory, list_item):
@@ -71,8 +75,8 @@ class DownloadsPage(Adw.NavigationPage):
     @Gtk.Template.Callback()
     def on_header_setup(self, factory, header):
         header.set_child(Gtk.Label(
-            xalign=0, ellipsize=Pango.EllipsizeMode.END, css_classes=["heading"],
-            margin_top=12, margin_bottom=6, margin_start=12, margin_end=12,
+            xalign=0, ellipsize=Pango.EllipsizeMode.END, css_classes=["title-4"],
+            margin_top=18, margin_bottom=6, margin_start=6, margin_end=6,
         ))
         header.connect("notify::item", self.update_header)
 
@@ -80,7 +84,7 @@ class DownloadsPage(Adw.NavigationPage):
     def on_header_bind(self, factory, header):
         self.update_header(header)
 
-    def update_header(self, header, *_):
+    def update_header(self, header, *args):
         item = header.get_item()
         header.get_child().set_label(item.manga_title if item else "")
 
@@ -103,20 +107,20 @@ class DownloadsPage(Adw.NavigationPage):
         await self.suwayomi.enqueueChapterDownload(chapter_id)
 
     @Gtk.Template.Callback()
-    def on_toggle_clicked(self, *_):
+    def on_toggle_clicked(self, *args):
         if self.downloader_state == "STARTED":
             asyncio.create_task(self.suwayomi.stopDownloader())
         else:
             asyncio.create_task(self.suwayomi.startDownloader())
 
     @Gtk.Template.Callback()
-    def on_clear_clicked(self, *_):
+    def on_clear_clicked(self, *args):
         dialog = Adw.AlertDialog(
-            heading="Clear download queue?",
-            body="Every queued chapter will be removed. Chapters already downloaded stay on the server.",
+            heading=_("Clear download queue?"),
+            body=_("Every queued chapter will be removed. Chapters already downloaded stay on the server."),
         )
-        dialog.add_response("cancel", "Cancel")
-        dialog.add_response("clear", "Clear")
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("clear", _("Clear"))
         dialog.set_response_appearance("clear", Adw.ResponseAppearance.DESTRUCTIVE)
         dialog.set_default_response("cancel")
         dialog.set_close_response("cancel")

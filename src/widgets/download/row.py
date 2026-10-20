@@ -2,6 +2,7 @@ from gi.repository import Gtk, Gdk, GObject
 
 from ...integrations import models
 
+
 @Gtk.Template(resource_path='/io/github/riyaniii/Kaori/download/row.ui')
 class DownloadRow(Gtk.Box):
     __gtype_name__ = "KaoriDownloadRow"
@@ -41,9 +42,9 @@ class DownloadRow(Gtk.Box):
         self.add_controller(drop_target)
 
     def on_drag_prepare(self, source, x, y):
-        if self.model is None or self.model.chapter is None:
+        if self.model is None:
             return None
-        value = GObject.Value(GObject.TYPE_INT, self.model.chapter.id)
+        value = GObject.Value(GObject.TYPE_INT, self.model.chapter_id)
         return Gdk.ContentProvider.new_for_value(value)
 
     def on_drag_begin(self, source, drag):
@@ -58,47 +59,21 @@ class DownloadRow(Gtk.Box):
 
     def on_drop(self, target, value, x, y):
         self.remove_css_class("drop-target")
-        if self.model is None or self.model.chapter is None:
-            return False
-        if value == self.model.chapter.id:
-            return False
-        self.emit("reorder-requested", value, self.model.chapter.id)
-        return True
-
-    def on_drag_prepare(self, source, x, y):
-        if self.model is None:
-            return None
-        value = GObject.Value(GObject.TYPE_INT, self.model.chapter_id)
-        return Gdk.ContentProvider.new_for_value(value)
-
-    def on_drop(self, target, value, x, y):
-        self.remove_css_class("drop-target")
         if self.model is None or value == self.model.chapter_id:
             return False
         self.emit("reorder-requested", value, self.model.chapter_id)
         return True
 
     @Gtk.Template.Callback()
-    def on_retry_clicked(self, *_):
-        if self.model:
-            self.emit("retry-requested", self.model.chapter_id)
-
-    @Gtk.Template.Callback()
-    def on_remove_clicked(self, *_):
-        if self.model:
-            self.emit("remove-requested", self.model.chapter_id)
-
-
-    @Gtk.Template.Callback()
     def is_error(self, obj, state):
         return (state or "").upper() == "ERROR"
 
     @Gtk.Template.Callback()
-    def on_retry_clicked(self, *_):
-        if self.model and self.model.chapter:
-            self.emit("retry-requested", self.model)
+    def on_retry_clicked(self, *args):
+        if self.model:
+            self.emit("retry-requested", self.model.chapter_id)
 
     @Gtk.Template.Callback()
-    def on_remove_clicked(self, *_):
-        if self.model and self.model.chapter:
-            self.emit("remove-requested", self.model)
+    def on_remove_clicked(self, *args):
+        if self.model:
+            self.emit("remove-requested", self.model.chapter_id)

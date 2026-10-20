@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresource>
+  <file alias="window.ui">widgets/window.ui</file>
+  <file alias="setup.ui">widgets/setup.ui</file>
+  <file alias="shortcuts.ui">widgets/shortcuts.ui</file>
+</gresource>

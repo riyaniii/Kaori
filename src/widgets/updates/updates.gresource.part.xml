@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresource>
+  <file alias="updates/page.ui">widgets/updates/page.ui</file>
+  <file alias="updates/row.ui">widgets/updates/row.ui</file>
+</gresource>

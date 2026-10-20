@@ -2,14 +2,14 @@ import asyncio
 import bisect
 import math
 
-from gi.repository import Adw, Gio, Graphene, GObject, Gsk, Gtk
+from gi.repository import Adw, Gdk, Gio, Graphene, GObject, Gsk, Gtk
 
 from .base import ZOOM_MAX
 
-DEFAULT_RATIO = 0.68
-ZOOM_MIN = 0.5  
-PRELOAD = 0.5
-POOL_MAX = 6
+ZOOM_MIN = 0.5
+PRELOAD = 1.0
+IMAGE_PREFETCH = 4
+POOL_MAX = 8
 
 
 class Panel(Gtk.Stack):
@@ -17,7 +17,8 @@ class Panel(Gtk.Stack):
 
     def __init__(self):
         super().__init__()
-        self.page = None
+        self.ratio_handler = 0
+        self.bindings = GObject.BindingGroup()
         self.picture = Gtk.Picture(content_fit=Gtk.ContentFit.FILL)
         self.banner_title = Gtk.Label(
             css_classes=["title-1"],
@@ -34,15 +35,30 @@ class Panel(Gtk.Stack):
         self.add_named(self.picture, "picture")
         self.add_named(spinner, "spinner")
         self.add_named(self.banner_title, "banner")
-        self.set_paintable(None)
+        self.set_visible_child_name("spinner")
 
-    def set_paintable(self, paintable):
-        self.picture.set_paintable(paintable)
-        self.set_visible_child_name("picture" if paintable else "spinner")
+        self.bindings.bind("paintable", self, "paintable", GObject.BindingFlags.SYNC_CREATE)
 
-    def set_banner(self, chapter):
-        self.banner_title.set_label(chapter.name)
-        self.set_visible_child_name("banner")
+    @GObject.Property(type=Gdk.Paintable)
+    def paintable(self):
+        return self.picture.get_paintable()
+
+    @paintable.setter
+    def paintable(self, value):
+        self.picture.set_paintable(value)
+        self.set_visible_child_name("picture" if value else "spinner")
+
+    def show_page(self, page):
+        chapter = getattr(page, "chapter", None)
+        if chapter is None:
+            self.bindings.set_source(page)
+        else:
+            self.banner_title.set_label(chapter.name)
+            self.set_visible_child_name("banner")
+
+    def clear(self):
+        self.bindings.set_source(None)
+        self.paintable = None
 
 
 class Canvas(Gtk.Widget, Gtk.Scrollable):
@@ -63,18 +79,21 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
         self.suwayomi = Gio.Application.get_default().suwayomi
         self.store = None
 
-        self.ratios = []
-        self.starts = []   
-        self.sizes = []    
-        self.extent = 0.0  
-        self.cross = 0     
+        self.pages = []
+        self.indices = {}
+        self.starts = []
+        self.sizes = []
+        self.extent = 0.0
+        self.cross = 0
+        self.layout_dirty = False
+        self.saved_anchor = None
 
         self.zoom = 1.0
 
-        self.realized = {}  
-        self.tasks = {}     
+        self.realized = {}
+        self.tasks = {}
         self.pool = []
-        self.current_index = -1
+        self.current_page = None
         self.pending_index = None
 
         self.connect("notify::orientation", self.on_orientation_changed)
@@ -82,6 +101,8 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
         self.connect("notify::vadjustment", self.on_adjustment_replaced)
 
     def do_dispose(self):
+        for page, panel in self.realized.items():
+            page.disconnect(panel.ratio_handler)
         for task in self.tasks.values():
             task.cancel()
         while child := self.get_first_child():
@@ -136,18 +157,48 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
         store.connect("items-changed", self.on_items_changed)
 
     def on_items_changed(self, store, position, removed, added):
-        for index in list(self.realized):
-            self.unrealize_panel(index)
-        self.ratios = [DEFAULT_RATIO] * store.get_n_items()
-        self.current_index = -1
-        self.relayout()
-        self.configure_adjustments()
-        self.set_scroll_value(self.hadjustment, 0)
-        self.set_scroll_value(self.vadjustment, 0)
+        self.invalidate_layout()
+        self.pages = list(store)
+        self.indices = {page: index for index, page in enumerate(self.pages)}
+        for page in list(self.realized):
+            if page not in self.indices:
+                self.unrealize_panel(page)
+
+    def on_ratio_changed(self, page, pspec):
+        self.invalidate_layout()
+
+    def invalidate_layout(self):
+        if not self.layout_dirty:
+            self.saved_anchor = self.find_anchor()
+            self.layout_dirty = True
         self.queue_allocate()
 
+    def index_at(self, position):
+        return max(0, bisect.bisect_right(self.starts, position) - 1)
+
+    def find_anchor(self):
+        if not self.starts or self.cross == 0:
+            return None
+        top = self.scroll_value(self.main_adjustment) / self.zoom
+        index = self.index_at(top)
+        size = self.sizes[index]
+        fraction = (top - self.starts[index]) / size if size else 0.0
+        return self.pages[index], fraction
+
+    def restore_anchor(self, anchor):
+        if anchor is None:
+            return
+        page, fraction = anchor
+        index = self.indices.get(page)
+        if index is None:
+            self.set_scroll_value(self.hadjustment, 0)
+            self.set_scroll_value(self.vadjustment, 0)
+            return
+        position = self.starts[index] + fraction * self.sizes[index]
+        self.set_scroll_value(self.main_adjustment, position * self.zoom)
+
     def scroll_to_index(self, index: int):
-        if self.cross == 0:
+        if self.cross == 0 or self.layout_dirty:
             self.pending_index = index
             return
         self.pending_index = None
@@ -155,7 +206,6 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
             self.set_scroll_value(self.main_adjustment, self.starts[index] * self.zoom)
 
     def scroll_by(self, amount):
-        """Scroll along the strip, positive is towards the end of the chapter."""
         adjustment = self.main_adjustment
         self.set_scroll_value(adjustment, self.scroll_value(adjustment) + amount)
 
@@ -163,9 +213,9 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
         self.scroll_by(direction * self.main_adjustment.get_page_increment())
 
     def on_orientation_changed(self, canvas, pspec):
-        if self.cross == 0:  
+        if self.cross == 0:
             return
-        self.pending_index = self.current_index
+        self.pending_index = self.indices.get(self.current_page, 0)
         self.cross = 0
         self.set_scroll_value(self.hadjustment, 0)
         self.set_scroll_value(self.vadjustment, 0)
@@ -175,30 +225,13 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
         self.starts = []
         self.sizes = []
         position = 0.0
-        for ratio in self.ratios:
+        for page in self.pages:
+            ratio = page.ratio
             size = self.cross / ratio if self.vertical else self.cross * ratio
             self.starts.append(position)
             self.sizes.append(size)
             position += size
         self.extent = position
-
-    def set_ratio(self, index, ratio):
-        if abs(ratio - self.ratios[index]) < 0.001:
-            return
-
-        start = self.starts[index]
-        old_size = self.sizes[index]
-        self.ratios[index] = ratio
-        self.relayout()
-        self.configure_adjustments()
-
-        adjustment = self.main_adjustment
-        value = self.scroll_value(adjustment)
-        if start + old_size <= value / self.zoom:
-            change = (self.sizes[index] - old_size) * self.zoom
-            self.set_scroll_value(adjustment, value + change)
-
-        self.queue_allocate()
 
     def visible_range(self):
         if not self.starts:
@@ -212,27 +245,33 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
         last = min(len(self.starts) - 1, bisect.bisect_left(self.starts, high))
         return first, last
 
-    def update_current_index(self):
+    def update_current_page(self):
         if not self.starts:
+            self.current_page = None
             return
         adjustment = self.main_adjustment
         middle = (self.scroll_value(adjustment) + adjustment.get_page_size() / 2) / self.zoom
-        index = max(0, bisect.bisect_right(self.starts, middle) - 1)
-        if index != self.current_index:
-            self.current_index = index
+        index = self.index_at(middle)
+        page = self.pages[index]
+        if page is not self.current_page:
+            self.current_page = page
             self.emit("page-changed", index)
 
     def update_realized(self):
         first, last = self.visible_range()
-        wanted = set(range(first, last + 1))
+        wanted = self.pages[first:last + 1]
 
-        for index in list(self.realized):
-            if index not in wanted:
-                self.unrealize_panel(index)
-        for index in sorted(wanted - self.realized.keys()):
-            self.realize_panel(index)
+        for page in list(self.realized):
+            if page not in wanted:
+                self.unrealize_panel(page)
+        for page in wanted:
+            if page not in self.realized:
+                self.realize_panel(page)
 
-    def realize_panel(self, index):
+        for page in self.pages[last + 1:last + 1 + IMAGE_PREFETCH]:
+            self.suwayomi.prefetch(page.url)
+
+    def realize_panel(self, page):
         if self.pool:
             panel = self.pool.pop()
             panel.set_visible(True)
@@ -240,46 +279,26 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
             panel = Panel()
             panel.set_parent(self)
 
-        page = self.store.get_item(index)
-        panel.page = page
-        self.realized[index] = panel
+        panel.show_page(page)
+        panel.ratio_handler = page.connect("notify::ratio", self.on_ratio_changed)
+        self.realized[page] = panel
 
-        if getattr(page, "chapter", None) is not None:
-            panel.set_banner(page.chapter)
-        elif page.paintable is not None:
-            self.show_paintable(index, page.paintable)
-        else:
-            panel.set_paintable(None)
-            if page.url:
-                self.tasks[index] = asyncio.create_task(self.load_page(index, page))
+        if page.paintable is None and page.url:
+            self.tasks[page] = asyncio.create_task(self.suwayomi.loadPage(page))
 
-    def unrealize_panel(self, index):
-        panel = self.realized.pop(index)
-        if task := self.tasks.pop(index, None):
+    def unrealize_panel(self, page):
+        panel = self.realized.pop(page)
+        page.disconnect(panel.ratio_handler)
+        if task := self.tasks.pop(page, None):
             task.cancel()
 
-        panel.page.paintable = None
-        panel.page = None
-        panel.set_paintable(None)
-
+        page.paintable = None
+        panel.clear()
         panel.set_visible(False)
         if len(self.pool) < POOL_MAX:
             self.pool.append(panel)
         else:
             panel.unparent()
-
-    async def load_page(self, index, page):
-        try:
-            paintable = await self.suwayomi.getPaintable(page.url)
-        except Exception:
-            return
-        if paintable:
-            page.paintable = paintable
-            self.show_paintable(index, paintable)
-
-    def show_paintable(self, index, paintable):
-        self.realized[index].set_paintable(paintable)
-        self.set_ratio(index, paintable.get_intrinsic_aspect_ratio() or DEFAULT_RATIO)
 
     def place_panels(self, width, height):
         left = self.scroll_value(self.hadjustment) / self.zoom
@@ -288,7 +307,8 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
         offset_x = self.centering_offset(self.content_width, self.zoom, width)
         offset_y = self.centering_offset(self.content_height, self.zoom, height)
 
-        for index, panel in self.realized.items():
+        for page, panel in self.realized.items():
+            index = self.indices[page]
             x = offset_x - left
             y = offset_y - top
             if self.vertical:
@@ -393,11 +413,17 @@ class Canvas(Gtk.Widget, Gtk.Scrollable):
             self.cross = cross
             self.relayout()
             self.restore_scroll_fractions(fractions)
+        elif self.layout_dirty:
+            self.relayout()
+            self.configure_adjustments()
+            self.restore_anchor(self.saved_anchor)
+        self.layout_dirty = False
+        self.saved_anchor = None
         self.configure_adjustments()
 
         if self.pending_index is not None:
             self.scroll_to_index(self.pending_index)
 
-        self.update_current_index()
+        self.update_current_page()
         self.update_realized()
         self.place_panels(width, height)

@@ -1,5 +1,3 @@
-import asyncio
-
 from gi.repository import Gtk, GObject, Gio, GLib
 from ..manga import MangaCard
 from ...integrations import models
@@ -43,13 +41,8 @@ class MangaRow(Gtk.Box):
 
     def on_unbind(self, factory, list_item):
         card = list_item.get_child()
-        if card.thumbnail_task:
-            card.thumbnail_task.cancel()
-            card.thumbnail_task = None
-
-        item = list_item.get_item()
-        item.paintable = None
-
+        self.suwayomi.stopThumbnail(list_item.get_item(), card.thumbnail_task)
+        card.thumbnail_task = None
         card.model = None
 
     def on_activate(self, listview, position):

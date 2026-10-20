@@ -1,0 +1,24 @@
+using Gtk 4.0;
+
+template $KaoriCategoryRow : Gtk.Box {
+  spacing: 12;
+  margin-start: 6;
+  margin-end: 6;
+  margin-top: 12;
+  margin-bottom: 12;
+
+  Gtk.Label name_label {
+    xalign: 0;
+    hexpand: true;
+    ellipsize: end;
+  }
+
+  Gtk.Label count_label {
+    xalign: 1;
+
+    styles [
+      "dim-label",
+      "numeric"
+    ]
+  }
+}

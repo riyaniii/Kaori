@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresource>
+  <file alias="containers/manga_grid.ui">widgets/containers/manga_grid.ui</file>
+  <file alias="containers/row.ui">widgets/containers/row.ui</file>
+</gresource>

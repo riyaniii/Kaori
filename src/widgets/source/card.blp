@@ -1,0 +1,36 @@
+using Gtk 4.0;
+
+template $KaoriSourceCard : Gtk.Box {
+  orientation: horizontal;
+  spacing: 12;
+  margin-top: 12;
+  margin-bottom: 12;
+  margin-start: 8;
+  margin-end: 8;
+
+  Gtk.Image logo {
+    paintable: bind template.model as <$KaoriSource> .paintable;
+    pixel-size: 50;
+  }
+
+  Gtk.Box info {
+    orientation: vertical;
+    spacing: 2;
+    valign: center;
+    hexpand: true;
+
+    Gtk.Label name {
+      label: bind template.model as <$KaoriSource> .name;
+      xalign: 0.0;
+      ellipsize: end;
+    }
+
+    Gtk.Label subtitle {
+      styles [
+        "dim-label"
+      ]
+      label: bind $get_subtitle(template.model as <$KaoriSource> .is_nsfw) as <string>;
+      xalign: 0.0;
+    }
+  }
+}

@@ -1,25 +1,146 @@
 import asyncio
-from gi.repository import Gtk, Adw, Gio
+import os
 
-DEFAULT_DESCRIPTION = "Run Suwayomi locally or connect to an existing server"
+from gi.repository import Gtk, Adw, Gio, GLib
+
+from ..constants import DONATE_URL, GUIDE_URL
+
+LOCAL_SOURCE_URL = "https://github.com/Suwayomi/Suwayomi-Server/wiki/Local-Source"
+
 
 @Gtk.Template(resource_path='/io/github/riyaniii/Kaori/setup.ui')
 class SetupWindow(Adw.ApplicationWindow):
     __gtype_name__ = 'KaoriSetupWindow'
 
+    toolbar = Gtk.Template.Child()
+    carousel = Gtk.Template.Child()
     status_page = Gtk.Template.Child()
     local_row = Gtk.Template.Child()
     remote_row = Gtk.Template.Child()
+    repo_page = Gtk.Template.Child()
+    extensions_page = Gtk.Template.Child()
+    local_page = Gtk.Template.Child()
+    folder_row = Gtk.Template.Child()
+    done_page = Gtk.Template.Child()
+    back_button = Gtk.Template.Child()
+    next_button = Gtk.Template.Child()
 
-    def __init__(self, error: str | None = None, **kwargs):
+    def __init__(self, error: str | None = None, guided: bool | None = None, **kwargs):
         super().__init__(**kwargs)
         self.app = Gio.Application.get_default()
+        if guided is None:
+            guided = not self.app.settings.get_boolean('welcome-shown')
+        self.guided = guided
+        self.mode = "local"
+        self.url = ""
+        self.local_folder = None
+        self.local_path = ""
+        self.current = 0
+
         if error:
             self.status_page.set_description(error)
 
+        self.carousel.remove(self.local_page)
+        if guided:
+            self.toolbar.set_reveal_bottom_bars(True)
+        else:
+            for page in (self.repo_page, self.extensions_page, self.done_page):
+                self.carousel.remove(page)
+        self.update_nav()
+
+    def update_nav(self):
+        last = self.carousel.get_n_pages() - 1
+        self.back_button.set_visible(self.current > 0)
+        self.next_button.set_visible(self.current > 0)
+        self.next_button.set_label('Get Started' if self.current >= last else 'Next')
+
+    def go_to(self, index: int):
+        self.carousel.scroll_to(self.carousel.get_nth_page(index), True)
+
+    def open_uri(self, url: str):
+        Gtk.UriLauncher(uri=url).launch(self, None, None)
+
+    def set_local_step(self, enabled: bool):
+        present = self.local_page.get_parent() is not None
+        if enabled and not present:
+            self.update_folder_row()
+            self.carousel.insert(self.local_page, self.carousel.get_n_pages() - 1)
+        elif not enabled and present:
+            self.carousel.remove(self.local_page)
+        self.update_nav()
+
+    def update_folder_row(self):
+        self.local_folder = self.local_path or self.app.server.default_folder('local')
+        self.folder_row.set_subtitle(self.local_folder)
+
+    def choose(self, mode: str, url: str):
+        if not self.guided:
+            self.begin_connect(mode, url)
+            return
+        self.mode = mode
+        self.url = url
+        self.set_local_step(mode == "local")
+        self.go_to(1)
+
+    @Gtk.Template.Callback()
+    def on_position_changed(self, carousel, pspec):
+        self.current = round(carousel.get_position())
+        self.update_nav()
+
+    @Gtk.Template.Callback()
+    def on_back(self, button):
+        if self.current > 0:
+            self.go_to(self.current - 1)
+
+    @Gtk.Template.Callback()
+    def on_next(self, button):
+        if self.current >= self.carousel.get_n_pages() - 1:
+            self.begin_connect(self.mode, self.url)
+        else:
+            self.go_to(self.current + 1)
+
+    @Gtk.Template.Callback()
+    def on_guide(self, button):
+        self.open_uri(GUIDE_URL)
+
+    @Gtk.Template.Callback()
+    def on_local_guide(self, button):
+        self.open_uri(LOCAL_SOURCE_URL)
+
+    @Gtk.Template.Callback()
+    def on_donate(self, button):
+        self.open_uri(DONATE_URL)
+
+    @Gtk.Template.Callback()
+    def on_path_activated(self, row):
+        Gtk.FileDialog(title=row.get_title()).select_folder(
+            self, None, self.on_path_selected
+        )
+
+    def on_path_selected(self, dialog, result):
+        try:
+            folder = dialog.select_folder_finish(result)
+        except GLib.Error:
+            return
+        self.local_path = folder.get_path()
+        self.update_folder_row()
+
+    @Gtk.Template.Callback()
+    def on_path_cleared(self, button):
+        self.local_path = ""
+        self.update_folder_row()
+
+    @Gtk.Template.Callback()
+    def on_open_folder(self, button):
+        try:
+            os.makedirs(self.local_folder, exist_ok=True)
+        except OSError:
+            return
+        Gtk.FileLauncher(file=Gio.File.new_for_path(self.local_folder)).launch(self, None, None)
+
     @Gtk.Template.Callback()
     def on_local_activated(self, row):
-        self.begin_connect("local", "")
+        self.choose("local", "")
 
     @Gtk.Template.Callback()
     def on_remote_activated(self, row):
@@ -66,7 +187,7 @@ class SetupWindow(Adw.ApplicationWindow):
             if not url.startswith(('http://', 'https://')):
                 url = f"http://{url}"
             dialog.close()
-            self.begin_connect("remote", url)
+            self.choose("remote", url)
 
         update_sensitivity()
         url_row.connect("changed", update_sensitivity)
@@ -79,24 +200,26 @@ class SetupWindow(Adw.ApplicationWindow):
         self.set_visible(False)
         asyncio.create_task(self.try_connect(mode, url))
 
-    async def try_connect(self, mode: str, url: str):
-        error = None
+    async def save_local_path(self):
         try:
-            success = await self.app.launch(mode, url)
+            await self.app.suwayomi.setServerSettings(localSourcePath=self.local_path)
+        except Exception as e:
+            print(f'[kaori] saving local source path failed: {e!r}')
+
+    async def try_connect(self, mode: str, url: str):
+        try:
+            if await self.app.launch(mode, url):
+                if self.guided:
+                    self.app.settings.set_boolean('welcome-shown', True)
+                    if mode == "local" and self.local_path:
+                        await self.save_local_path()
+                self.close()
+                return
+            error = self.app.failure_message(mode)
         except Exception as e:
             print(f'[kaori] launch raised: {e!r}')
-            success = False
             error = f"Failed to start: {e}"
-        if success:
-            self.close()
-            return
         self.set_visible(True)
-        if error is None:
-            log_path = getattr(self.app.server, 'log_path', None)
-            if mode == "remote":
-                error = "Couldn't connect. Check the address and try again."
-            elif log_path:
-                error = f"Couldn't start the local server. See the log:\n{log_path}"
-            else:
-                error = "Couldn't start the local server. Check the logs and try again."
+        if self.guided:
+            self.go_to(0)
         self.status_page.set_description(error)

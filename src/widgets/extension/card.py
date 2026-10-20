@@ -38,6 +38,19 @@ class ExtensionCard(Gtk.Box):
             await self.suwayomi.installExtension(model.pkg_name)
 
     @Gtk.Template.Callback()
+    def get_subtitle(self, obj, lang, version_name, is_nsfw):
+        parts = []
+        if lang:
+            parts.append(self.suwayomi.languageTitle(lang))
+        if version_name:
+            parts.append("v" + version_name)
+        if is_nsfw:
+            parts.append("18+")
+        else:
+            parts.append("Everyone")
+        return " · ".join(parts)
+
+    @Gtk.Template.Callback()
     def get_action_button_tooltip(self, obj, is_installed, has_update):
         if has_update:
             return "Update"
