@@ -1,6 +1,6 @@
 <p align="center"><img src="data/icons/hicolor/scalable/apps/io.github.riyaniii.Kaori.svg">
 <h1 align="center">Kaori</h1>
-
+  
 Kaori allows you to discover, download and read comics with a beautiful looking UI, and natural touchpad gestures.
 
 The name Kaori is a small tribute to Kaori Miyazono from *Your Lie in April*, a character who left a lasting impression on me.
@@ -14,6 +14,7 @@ The name Kaori is a small tribute to Kaori Miyazono from *Your Lie in April*, a 
 - Natural touchpad gesture navigation (Pinch to zoom/two-finger scroll to move)
 
 Kaori connects to/runs [Suwayomi](https://github.com/Suwayomi/Suwayomi-Server) as the backend.
+(The current app icon is a placeholder, inspired by Komikku's)
 
 <p align="start">
   <a href="https://www.buymeacoffee.com/riyanparvez">
