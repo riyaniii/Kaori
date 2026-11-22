@@ -1,0 +1,98 @@
+using Gtk 4.0;
+using Adw 1;
+
+Adw.ShortcutsDialog shortcuts_dialog {
+  Adw.ShortcutsSection {
+    title: _("General");
+
+    Adw.ShortcutsItem {
+      title: _("Open Search");
+      action-name: "app.open_search_page";
+    }
+
+    Adw.ShortcutsItem {
+      title: _("Open Library");
+      action-name: "app.open_library_page";
+    }
+
+    Adw.ShortcutsItem {
+      title: _("Open Downloads");
+      action-name: "app.open_downloads_page";
+    }
+
+    Adw.ShortcutsItem {
+      title: _("Swipe left to open the chapter panel");
+      accelerator: "N/A";
+    }
+  }
+
+  Adw.ShortcutsSection {
+    title: _("Reader");
+
+    Adw.ShortcutsItem {
+      title: _("Next Page");
+      accelerator: "Back";
+    }
+
+    Adw.ShortcutsItem {
+      title: _("Previous Page");
+      accelerator: "Forward";
+    }
+
+    Adw.ShortcutsItem {
+      title: _("Open Chapter Panel");
+      accelerator: "<Control>S";
+    }
+
+    Adw.ShortcutsItem {
+      title: _("Toggle Fullscreen");
+      accelerator: "F F11";
+    }
+
+    Adw.ShortcutsItem {
+      title: _("Scroll Up (Webtoon)");
+      accelerator: "Up";
+    }
+
+    Adw.ShortcutsItem {
+      title: _("Scroll Down (Webtoon)");
+      accelerator: "Down";
+    }
+
+    Adw.ShortcutsItem {
+      title: _("Zoom In");
+      accelerator: "<Control>plus";
+    }
+
+    Adw.ShortcutsItem {
+      title: _("Zoom Out");
+      accelerator: "<Control>minus";
+    }
+
+    Adw.ShortcutsItem {
+      title: _("Page Up (Webtoon)");
+      accelerator: "Page_Up";
+    }
+
+    Adw.ShortcutsItem {
+      title: _("Snap zoom to 100%");
+      subtitle: _("Double click to snap to 100%");
+      accelerator: "N/A";
+    }
+  }
+  Adw.ShortcutsSection {
+    title: _("Reader Gestures");
+
+    Adw.ShortcutsItem {
+      title: _("Zoom");
+      subtitle: _("Pinch with two fingers");
+      accelerator: "N/A";
+    }
+
+    Adw.ShortcutsItem {
+      title: _("Pan");
+      subtitle: _("Scroll with two fingers on a touchpad");
+      accelerator: "N/A";
+    }
+  }
+}

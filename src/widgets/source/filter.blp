@@ -1,0 +1,54 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriSourceFilter : Adw.Dialog {
+  title: _("Filters");
+  content-width: 480;
+  content-height: 600;
+
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      [start]
+      Gtk.Button reset_button {
+        label: _("Reset");
+        clicked => $on_reset_clicked();
+      }
+
+      [end]
+      Gtk.Button apply_button {
+        styles [
+          "suggested-action"
+        ]
+        label: _("Apply");
+        clicked => $on_apply_clicked();
+      }
+    }
+
+    content: Gtk.Stack filter_stack {
+      transition-type: crossfade;
+
+      Gtk.StackPage {
+        name: "loading";
+        child: Adw.Spinner {
+          halign: center;
+          valign: center;
+          width-request: 50;
+          height-request: 50;
+        };
+      }
+      Gtk.StackPage {
+        name: "filters";
+        child: Adw.PreferencesPage filter_page {};
+      }
+      Gtk.StackPage {
+        name: "empty";
+        child: Adw.StatusPage {
+          icon-name: "sliders-horizontal-symbolic";
+          title: _("No filters");
+          description: _("This source has no filters");
+        };
+      }
+    };
+  };
+}

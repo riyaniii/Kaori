@@ -1,0 +1,41 @@
+#!@PYTHON@
+
+import os
+import sys
+import signal
+import locale
+import gettext
+
+VERSION = '@VERSION@'
+
+if getattr(sys, 'frozen', False):
+    exe_dir = os.path.dirname(sys.executable)
+    base_dir = os.path.join(exe_dir, '_internal')
+    pkgdatadir = os.path.join(base_dir, 'share', 'kaori')
+    localedir = os.path.join(base_dir, 'share', 'locale')
+else:
+    pkgdatadir = '@pkgdatadir@'
+    localedir = '@localedir@'
+
+sys.path.insert(1, pkgdatadir)
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+try:
+    locale.bindtextdomain('kaori', localedir)
+    locale.textdomain('kaori')
+except AttributeError:
+    print('Cannot set locale.')
+
+try:
+    gettext.bindtextdomain('kaori', localedir)
+    gettext.textdomain('kaori')
+except AttributeError:
+    print('Cannot load translations.')
+
+if __name__ == '__main__':
+    from gi.repository import Gio
+    resource = Gio.Resource.load(os.path.join(pkgdatadir, 'kaori.gresource'))
+    Gio.resources_register(resource)
+
+    from kaori import main
+    sys.exit(main.main(VERSION))

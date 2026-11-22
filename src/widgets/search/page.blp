@@ -1,0 +1,60 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriSearchPage : Adw.NavigationPage {
+  title: _("Search");
+  tag: "search";
+
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      title-widget: Gtk.Entry search_entry {
+        placeholder-text: _("Find a manga");
+        primary-icon-name: "system-search-symbolic";
+        hexpand: true;
+        progress-fraction: bind $get_progress(template.completed_sources, template.total_sources) as <double>;
+        activate => $on_search_entry_activate();
+        margin-start: 120;
+        margin-end: 120;
+      };
+    }
+
+    content: Gtk.ScrolledWindow {
+      hscrollbar-policy: never;
+
+      child: Gtk.Stack {
+        transition-type: crossfade;
+        visible-child-name: bind template.state;
+
+        Gtk.StackPage {
+          name: "greeter";
+          child: Adw.StatusPage {
+            icon-name: "system-search-symbolic";
+            title: _("Search Everywhere");
+            description: _("Find mangas from all available sources");
+          };
+        }
+
+        Gtk.StackPage {
+          name: "result";
+          child: Gtk.Box main_box {
+            orientation: vertical;
+            spacing: 12;
+            margin-top: 6;
+            margin-start: 12;
+            margin-end: 12;
+          };
+        }
+
+        Gtk.StackPage {
+          name: "empty";
+          child: Adw.StatusPage {
+            icon-name: "system-search-symbolic";
+            title: _("No results found");
+            description: _("More sources can be added from preferences");
+          };
+        }
+      };
+    };
+  };
+}

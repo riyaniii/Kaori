@@ -1,0 +1,88 @@
+using Gtk 4.0;
+using Adw 1;
+using Gio 2.0;
+
+template $KaoriUpdatesPage : Adw.NavigationPage {
+  title: _("Updates");
+  tag: "updates";
+
+  child: Gtk.Stack {
+    transition-type: crossfade;
+    visible-child-name: bind $get_page((template.entries as <Gio.ListStore>).n-items) as <string>;
+
+    Gtk.StackPage {
+      name: "greeter";
+      child: Adw.ToolbarView {
+        extend-content-to-top-edge: true;
+
+        [top]
+        Adw.HeaderBar {
+          [end]
+          Gtk.Button {
+            icon-name: bind $get_update_icon(template.updating) as <string>;
+            tooltip-text: bind $get_update_tooltip(template.updating) as <string>;
+            clicked => $on_update_clicked();
+          }
+        }
+
+        content: Adw.StatusPage {
+          icon-name: "software-update-available-symbolic";
+          title: _("No updates yet");
+          description: _("New chapters from your library will show up here");
+        };
+      };
+    }
+
+    Gtk.StackPage {
+      name: "updates";
+      child: Adw.ToolbarView {
+        [top]
+        Adw.HeaderBar {
+          [end]
+          Gtk.Button {
+            icon-name: bind $get_update_icon(template.updating) as <string>;
+            tooltip-text: bind $get_update_tooltip(template.updating) as <string>;
+            clicked => $on_update_clicked();
+          }
+        }
+
+        content: Gtk.ScrolledWindow scrolled {
+          hscrollbar-policy: never;
+          edge-reached => $on_edge_reached();
+
+          child: Gtk.ListView {
+            styles [
+              "navigation-sidebar"
+            ]
+            margin-start: 12;
+            margin-end: 12;
+            single-click-activate: true;
+            activate => $on_activate();
+
+            model: Gtk.NoSelection {
+              model: Gtk.SortListModel {
+                section-sorter: Gtk.NumericSorter {
+                  expression: expr item as <$KaoriUpdatesEntry>.day_number;
+                  sort-order: descending;
+                };
+
+                model: bind template.entries;
+              };
+            };
+
+            factory: Gtk.SignalListItemFactory {
+              setup => $on_setup();
+              bind => $on_bind();
+              unbind => $on_unbind();
+            };
+
+            header-factory: Gtk.SignalListItemFactory {
+              setup => $on_header_setup();
+              bind => $on_header_bind();
+            };
+          };
+        };
+      };
+    }
+  };
+}

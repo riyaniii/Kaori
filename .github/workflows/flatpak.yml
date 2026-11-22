@@ -1,0 +1,44 @@
+name: Flatpak
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  flatpak:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-51
+      options: --privileged
+    steps:
+      # The Suwayomi jar is stored in Git LFS. Without lfs: true the bundle
+      # ships the ~130 byte pointer file and the local server can't start.
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Check the server jar
+        run: |
+          jar=$(ls src/Suwayomi-Server-*.jar)
+          size=$(stat -c %s "$jar")
+          echo "$jar: $size bytes"
+          if [ "$size" -lt 1000000 ]; then
+            echo "$jar is a Git LFS pointer, not the real jar" >&2
+            exit 1
+          fi
+
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: io.github.riyaniii.Kaori.flatpak
+          manifest-path: io.github.riyaniii.Kaori.json
+          cache-key: flatpak-builder-${{ hashFiles('io.github.riyaniii.Kaori.json', 'python3-*.json') }}
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: io.github.riyaniii.Kaori.flatpak

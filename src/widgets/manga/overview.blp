@@ -1,0 +1,56 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriMangaOverview : Gtk.Box {
+  orientation: horizontal;
+  spacing: 12;
+  height-request: 295;
+
+  Gtk.GestureClick {
+    released => $on_overview_clicked();
+  }
+
+  $KaoriMangaCard card {
+    model: bind template.model;
+    show_title: false;
+    width-request: 185;
+  }
+
+  Gtk.Box right {
+    orientation: vertical;
+    spacing: 12;
+
+    Gtk.Label title {
+      styles [
+        "title-3"
+      ]
+      label: bind template.model as <$KaoriManga> .title;
+      xalign: 0.0;
+      wrap: true;
+      wrap-mode: char;
+      lines: 2;
+      ellipsize: end;
+    }
+
+    Adw.WrapBox genres {
+      styles [
+      "overview-genres"
+      ]
+      line-spacing: 6;
+      child-spacing: 6;
+    }
+
+    Gtk.Label description {
+      styles [
+        "body",
+      ]
+      label: bind $get_shortened_description(template.model as <$KaoriManga> .description) as <string>;
+      selectable: true;
+      xalign: 0.0;
+      wrap: true;
+      wrap-mode: word_char;
+      lines: 5;
+      ellipsize: end;
+    }
+  }
+}

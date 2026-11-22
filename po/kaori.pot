@@ -1,0 +1,2353 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the kaori package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: kaori\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-22 20:01+0530\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: data/io.github.riyaniii.Kaori.desktop.in:2
+#: data/io.github.riyaniii.Kaori.metainfo.xml.in:9 src/widgets/window.blp:24
+msgid "Kaori"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.desktop.in:3
+#: data/io.github.riyaniii.Kaori.metainfo.xml.in:10
+msgid "Discover and read comics"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.desktop.in:9
+msgid "Manga;Manhwa;Manhua;Comics;Comic;Reader;Suwayomi;Mihon;Tachiyomi;Komikku;"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:6
+msgid "Suwayomi connection mode"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:7
+msgid ""
+"Either \"local\" (bundled server) or \"remote\" (user-provided URL). Empty "
+"means not yet configured."
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:11
+msgid "Suwayomi server URL"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:12
+msgid ""
+"The URL of the Suwayomi server the app connects to. Only meaningful when "
+"suwayomi-mode is \"remote\"."
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:16
+msgid "Suwayomi username"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:17
+msgid ""
+"The username used to sign in to the Suwayomi server. Empty when the server "
+"doesn't need a login. The password is kept in the system keyring."
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:21
+msgid "Updates last seen"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:22
+msgid ""
+"The fetch time of the newest chapter when the Updates page was last opened. "
+"Used for the Updates badge."
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:26
+msgid "Donation reminder last shown"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:27
+msgid ""
+"When the donation dialog was last shown, in seconds since 1970. It is shown "
+"again after 30 days."
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:31
+msgid "Reader tutorial shown"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:32
+msgid ""
+"Whether the reader controls and gestures were shown on the first visit to "
+"the reader."
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:36
+msgid "Keep the server running in the background"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:37
+msgid ""
+"Keep the local Suwayomi server and the app process running after the window "
+"is closed."
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:41
+msgid "Start the server on login"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:42
+msgid ""
+"Start the local Suwayomi server in the background when the user logs in."
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:46
+msgid "Welcome dialog shown"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:47
+msgid ""
+"Whether the welcome dialog explaining sources and the Mihon getting started "
+"guide has already been shown."
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:55
+msgid "Library display mode"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:56
+msgid "How manga are shown in the library grid."
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:60
+msgid "Show unread badges"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:61
+msgid "Show the number of unread chapters on library covers."
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:65
+msgid "Show download badges"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.gschema.xml:66
+msgid "Show the number of downloaded chapters on library covers."
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.metainfo.xml.in:13
+msgid "Riyan Parvez"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.metainfo.xml.in:17
+msgid ""
+"Discover, download and read comics with a beautiful interface and natural "
+"touchpad gestures."
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.metainfo.xml.in:22
+msgid "Browse and search comics from many sources"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.metainfo.xml.in:23
+msgid "Download chapters to read offline"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.metainfo.xml.in:24
+msgid "Single page, double page and webtoon reading modes"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.metainfo.xml.in:25
+msgid "Track your progress on AniList, MyAnimeList and more"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.metainfo.xml.in:26
+msgid "Run Suwayomi on your computer or connect to your own server"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.metainfo.xml.in:28
+msgid ""
+"Kaori is made and maintained by a student. If you enjoy it, please consider "
+"donating to support its development."
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.metainfo.xml.in:59 src/widgets/home/page.blp:5
+#: src/widgets/main_view.blp:68 src/widgets/main_view.blp:72
+msgid "Home"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.metainfo.xml.in:63
+#: src/widgets/browse/page.blp:39 src/widgets/home/page.blp:22
+#: src/widgets/main_view.blp:92 src/widgets/main_view.blp:96
+#: src/widgets/search/page.blp:5 src/widgets/source/page.blp:138
+#: src/widgets/source/page.blp:147
+msgid "Search"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.metainfo.xml.in:67
+#: src/widgets/preferences/preferences.blp:11 src/widgets/reader/guide.blp:94
+#: src/widgets/shortcuts.blp:30
+msgid "Reader"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.metainfo.xml.in:71
+msgid "Comic Details"
+msgstr ""
+
+#: data/io.github.riyaniii.Kaori.metainfo.xml.in:75 src/main.py:249
+#: src/widgets/download/page.blp:6 src/widgets/main_view.blp:142
+#: src/widgets/main_view.blp:148 src/widgets/preferences/preferences.blp:290
+msgid "Downloads"
+msgstr ""
+
+#: src/integrations/suwayomi.py:309 src/integrations/suwayomi.py:358
+msgid ""
+"Couldn't reach the server. Check the address and that the server is running."
+msgstr ""
+
+#: src/integrations/suwayomi.py:318
+msgid "This address doesn't look like a Suwayomi server."
+msgstr ""
+
+#: src/integrations/suwayomi.py:332
+msgid "This server needs a username and password."
+msgstr ""
+
+#: src/integrations/suwayomi.py:340 src/integrations/suwayomi.py:369
+#: src/integrations/suwayomi.py:381
+msgid "The username or password is wrong."
+msgstr ""
+
+#: src/integrations/suwayomi.py:765 src/widgets/preferences/preferences.blp:111
+#: src/widgets/preferences/preferences.blp:301
+#: src/widgets/preferences/preferences.blp:341 src/widgets/setup.py:197
+msgid "Default"
+msgstr ""
+
+#: src/integrations/suwayomi.py:1122
+msgid "All languages"
+msgstr ""
+
+#: src/integrations/suwayomi.py:1124
+msgid "Other"
+msgstr ""
+
+#: src/main.py:70
+msgid "Start the server without opening a window"
+msgstr ""
+
+#: src/main.py:141
+#, python-brace-format
+msgid ""
+"Couldn't start the local server. See the log:\n"
+"{}"
+msgstr ""
+
+#: src/main.py:142
+msgid "Couldn't start the local server. Check the logs and try again."
+msgstr ""
+
+#: src/main.py:176 src/widgets/setup.py:150
+#, python-brace-format
+msgid "Failed to start: {}"
+msgstr ""
+
+#: src/main.py:251
+#, python-brace-format
+msgid "Downloads ({})"
+msgstr ""
+
+#: src/main.py:252
+#, python-brace-format
+msgid "Downloads ({}, paused)"
+msgstr ""
+
+#: src/main.py:260
+msgid "Pause Downloads"
+msgstr ""
+
+#: src/main.py:260
+msgid "Resume Downloads"
+msgstr ""
+
+#: src/main.py:262
+msgid "Clear Download Queue"
+msgstr ""
+
+#: src/main.py:266
+msgid "Open Kaori"
+msgstr ""
+
+#: src/main.py:270
+msgid "Open Web Interface"
+msgstr ""
+
+#: src/main.py:272
+msgid "Quit"
+msgstr ""
+
+#: src/main.py:309
+msgid "Keep the Suwayomi server running"
+msgstr ""
+
+#: src/main.py:373 src/widgets/library/page.blp:310
+msgid "Unknown"
+msgstr ""
+
+#: src/main.py:379
+#, python-brace-format
+msgid "Unavailable: {}"
+msgstr ""
+
+#: src/main.py:380
+msgid "Not set up"
+msgstr ""
+
+#: src/main.py:399
+msgid "translator-credits"
+msgstr ""
+
+#: src/main.py:404 src/widgets/donate.blp:49
+msgid "Buy Me a Coffee"
+msgstr ""
+
+#: src/main.py:405
+msgid "Getting Started Guide"
+msgstr ""
+
+#: src/main.py:406
+msgid "Suwayomi"
+msgstr ""
+
+#: src/main.py:408
+msgid "CI added by"
+msgstr ""
+
+#: src/main.py:409
+msgid "Built With"
+msgstr ""
+
+#: src/main.py:415
+msgid "Inspired By"
+msgstr ""
+
+#: src/main.py:425
+msgid "Icons"
+msgstr ""
+
+#: src/main.py:426
+msgid "Some icons come from the GNOME Icon Development Kit"
+msgstr ""
+
+#: src/main.py:428
+msgid "These icons are dedicated to the public domain (CC0 1.0)."
+msgstr ""
+
+#: src/profiles.py:21
+msgid "This Computer"
+msgstr ""
+
+#: src/profiles.py:27
+msgid "This computer"
+msgstr ""
+
+#: src/widgets/browse/page.blp:5 src/widgets/browse/page.blp:24
+#: src/widgets/main_view.blp:116 src/widgets/main_view.blp:121
+msgid "Browse"
+msgstr ""
+
+#: src/widgets/browse/page.blp:32 src/widgets/browse/page.py:60
+msgid "Languages"
+msgstr ""
+
+#: src/widgets/browse/page.blp:64 src/widgets/preferences/preferences.blp:71
+#: src/widgets/source/sources.blp:6
+msgid "Sources"
+msgstr ""
+
+#: src/widgets/browse/page.blp:74 src/widgets/extension/extensions.blp:6
+#: src/widgets/preferences/preferences.blp:75
+msgid "Extensions"
+msgstr ""
+
+#: src/widgets/browse/page.py:27
+msgid "Find an extension"
+msgstr ""
+
+#: src/widgets/browse/page.py:28
+msgid "Find a source"
+msgstr ""
+
+#: src/widgets/browse/page.py:49
+msgid "Only sources in these languages are used"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:5 src/widgets/manga/page.blp:164
+#: src/widgets/preferences/preferences.blp:442
+msgid "Chapters"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:14 src/widgets/library/page.blp:43
+msgid "Sort and Filter"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:25
+msgid ":("
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:26 src/widgets/chapter/panel.py:141
+msgid "No Chapters"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:45 src/widgets/library/page.blp:62
+msgid "Sort & Filter"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:48 src/widgets/library/page.blp:65
+msgid "Sort"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:52 src/widgets/library/page.blp:69
+msgid "Sort by"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:55
+msgid "Source order"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:67 src/widgets/chapter/panel.blp:186
+msgid "Chapter number"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:80
+msgid "Upload date"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:93
+msgid "Date fetched"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:108
+msgid "Newest first"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:121 src/widgets/library/page.blp:177
+msgid "Filter"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:125 src/widgets/library/page.blp:181
+msgid "Show only"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:128 src/widgets/download/dialog.blp:59
+#: src/widgets/library/page.blp:184
+msgid "Unread"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:139 src/widgets/library/page.blp:206
+msgid "Downloaded"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:150 src/widgets/library/page.blp:217
+msgid "Bookmarked"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:162
+msgid "Scanlator"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:167
+msgid "Display"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:171
+msgid "Chapter label"
+msgstr ""
+
+#: src/widgets/chapter/panel.blp:174
+msgid "Source title"
+msgstr ""
+
+#: src/widgets/chapter/panel.py:139
+msgid "No chapters match the filters"
+msgstr ""
+
+#: src/widgets/chapter/panel.py:171
+msgid "All scanlators"
+msgstr ""
+
+#: src/widgets/common/chapter_menu.py:26
+msgid "Add Bookmark"
+msgstr ""
+
+#: src/widgets/common/chapter_menu.py:27
+msgid "Remove Bookmark"
+msgstr ""
+
+#: src/widgets/common/chapter_menu.py:28
+msgid "Mark as Read"
+msgstr ""
+
+#: src/widgets/common/chapter_menu.py:29
+msgid "Mark as Unread"
+msgstr ""
+
+#: src/widgets/common/chapter_menu.py:30
+msgid "Mark Earlier Chapters as Read"
+msgstr ""
+
+#: src/widgets/common/chapter_menu.py:31
+msgid "Mark Later Chapters as Read"
+msgstr ""
+
+#: src/widgets/common/chapter_menu.py:32
+msgid "Delete Download"
+msgstr ""
+
+#: src/widgets/common/chapter_menu.py:110
+#, python-brace-format
+msgid "Marked {} chapters as read"
+msgstr ""
+
+#: src/widgets/common/chapter_menu.py:122
+#, python-brace-format
+msgid "Deleted download of {}"
+msgstr ""
+
+#: src/widgets/common/chapters.py:7
+#, python-brace-format
+msgid "Chapter {}"
+msgstr ""
+
+#: src/widgets/common/chapters.py:13
+msgid "Finished"
+msgstr ""
+
+#: src/widgets/common/chapters.py:15
+#, python-brace-format
+msgid "Page {} of {}"
+msgstr ""
+
+#: src/widgets/common/dates.py:27
+msgid "Unknown date"
+msgstr ""
+
+#: src/widgets/common/dates.py:32
+msgid "Today"
+msgstr ""
+
+#: src/widgets/common/dates.py:34
+msgid "Yesterday"
+msgstr ""
+
+#: src/widgets/common/manga_menu.py:18 src/widgets/library/category_edit.blp:5
+msgid "Edit Categories"
+msgstr ""
+
+#: src/widgets/common/manga_menu.py:19 src/widgets/download/dialog.blp:5
+#: src/widgets/download/dialog.blp:24 src/widgets/manga/page.blp:181
+msgid "Download"
+msgstr ""
+
+#: src/widgets/common/manga_menu.py:20
+msgid "Remove from Library"
+msgstr ""
+
+#: src/widgets/common/manga_menu.py:21
+msgid "Add to Library"
+msgstr ""
+
+#: src/widgets/common/manga_menu.py:93 src/widgets/manga/page.py:169
+#, python-brace-format
+msgid "{} added to library"
+msgstr ""
+
+#: src/widgets/common/manga_menu.py:95 src/widgets/manga/page.py:167
+#, python-brace-format
+msgid "{} removed from library"
+msgstr ""
+
+#: src/widgets/donate.blp:5 src/widgets/donate.blp:30
+#: src/widgets/main_view.blp:173
+msgid "Support Kaori"
+msgstr ""
+
+#: src/widgets/donate.blp:36
+msgid ""
+"Kaori is made and maintained by a student in their free time. If you enjoy "
+"it, please consider donating, it really helps keep the app going."
+msgstr ""
+
+#: src/widgets/donate.blp:55
+msgid "Maybe Later"
+msgstr ""
+
+#: src/widgets/download/dialog.blp:17 src/widgets/download/page.py:122
+#: src/widgets/preferences/backups.py:85
+msgid "Cancel"
+msgstr ""
+
+#: src/widgets/download/dialog.blp:31
+msgid "Quick select"
+msgstr ""
+
+#: src/widgets/download/dialog.blp:39 src/widgets/setup.blp:384
+#: src/widgets/setup.py:171
+msgid "Next"
+msgstr ""
+
+#: src/widgets/download/dialog.blp:44
+msgid "Next 5"
+msgstr ""
+
+#: src/widgets/download/dialog.blp:49
+msgid "Next 10"
+msgstr ""
+
+#: src/widgets/download/dialog.blp:54
+msgid "Next 25"
+msgstr ""
+
+#: src/widgets/download/dialog.blp:64
+msgid "All"
+msgstr ""
+
+#: src/widgets/download/dialog.blp:71
+msgid "Range"
+msgstr ""
+
+#: src/widgets/download/dialog.blp:74
+msgid "From chapter"
+msgstr ""
+
+#: src/widgets/download/dialog.blp:81
+msgid "To chapter"
+msgstr ""
+
+#: src/widgets/download/dialog.blp:88
+msgid "Skip read chapters"
+msgstr ""
+
+#: src/widgets/download/dialog.blp:95 src/widgets/download/dialog.py:66
+#: src/widgets/download/dialog.py:105
+msgid "Nothing to download"
+msgstr ""
+
+#: src/widgets/download/dialog.py:59
+msgid "No chapters to download"
+msgstr ""
+
+#: src/widgets/download/dialog.py:73
+#, python-brace-format
+msgid "Downloading {} chapter"
+msgid_plural "Downloading {} chapters"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/widgets/download/dialog.py:107
+#, python-brace-format
+msgid "{} chapter will be downloaded"
+msgid_plural "{} chapters will be downloaded"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/widgets/download/page.blp:22
+msgid "No running downloads"
+msgstr ""
+
+#: src/widgets/download/page.blp:23
+msgid "Chapters you queue will show up here"
+msgstr ""
+
+#: src/widgets/download/page.blp:35
+msgid "Search for a chapter"
+msgstr ""
+
+#: src/widgets/download/page.blp:42
+msgid "Clear queue"
+msgstr ""
+
+#: src/widgets/download/page.py:54
+msgid "Pause downloads"
+msgstr ""
+
+#: src/widgets/download/page.py:55
+msgid "Start downloads"
+msgstr ""
+
+#: src/widgets/download/page.py:119
+msgid "Clear download queue?"
+msgstr ""
+
+#: src/widgets/download/page.py:120
+msgid ""
+"Every queued chapter will be removed. Chapters already downloaded stay on "
+"the server."
+msgstr ""
+
+#: src/widgets/download/page.py:123
+msgid "Clear"
+msgstr ""
+
+#: src/widgets/download/row.blp:16
+msgid "Drag to reorder"
+msgstr ""
+
+#: src/widgets/download/row.blp:52 src/widgets/reader/canvas.py:61
+msgid "Retry"
+msgstr ""
+
+#: src/widgets/download/row.blp:64
+msgid "Remove from queue"
+msgstr ""
+
+#: src/widgets/extension/card.py:49 src/widgets/source/card.py:19
+msgid "18+"
+msgstr ""
+
+#: src/widgets/extension/card.py:51 src/widgets/source/card.py:20
+msgid "Everyone"
+msgstr ""
+
+#: src/widgets/extension/card.py:57
+msgid "Update"
+msgstr ""
+
+#: src/widgets/extension/card.py:59
+msgid "Uninstall"
+msgstr ""
+
+#: src/widgets/extension/card.py:61
+msgid "Install"
+msgstr ""
+
+#: src/widgets/extension/dialog.blp:45
+#: src/widgets/preferences/preferences.blp:556
+msgid "Version"
+msgstr ""
+
+#: src/widgets/extension/dialog.blp:52
+msgid "Language"
+msgstr ""
+
+#: src/widgets/extension/dialog.blp:58
+msgid "Age rating"
+msgstr ""
+
+#: src/widgets/extension/dialog.blp:64 src/widgets/library/page.blp:240
+#: src/widgets/manga/tracking.py:137
+msgid "Status"
+msgstr ""
+
+#: src/widgets/extension/dialog.blp:76
+msgid "Package"
+msgstr ""
+
+#: src/widgets/extension/dialog.py:24
+msgid "NSFW"
+msgstr ""
+
+#: src/widgets/extension/dialog.py:24
+msgid "SAFE"
+msgstr ""
+
+#: src/widgets/extension/dialog.py:28
+msgid "Installed"
+msgstr ""
+
+#: src/widgets/extension/dialog.py:28
+msgid "Not installed"
+msgstr ""
+
+#: src/widgets/extension/dialog.py:30
+msgid "update available"
+msgstr ""
+
+#: src/widgets/extension/dialog.py:32
+msgid "obsolete"
+msgstr ""
+
+#: src/widgets/extension/extensions.blp:17
+msgid "Add extensions"
+msgstr ""
+
+#: src/widgets/extension/extensions.blp:18 src/widgets/source/sources.blp:19
+msgid "You can add them from preferences"
+msgstr ""
+
+#: src/widgets/extension/extensions.blp:28
+msgid "Update All"
+msgstr ""
+
+#: src/widgets/extension/extensions.py:26
+#, python-brace-format
+msgid "{} extension can be updated"
+msgid_plural "{} extensions can be updated"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/widgets/extension/extensions.py:40
+msgid "Couldn't update the extensions"
+msgstr ""
+
+#: src/widgets/history/page.blp:6 src/widgets/main_view.blp:104
+#: src/widgets/main_view.blp:108 src/widgets/preferences/preferences.blp:452
+msgid "History"
+msgstr ""
+
+#: src/widgets/history/page.blp:23
+msgid "No history yet"
+msgstr ""
+
+#: src/widgets/history/page.blp:24
+msgid "Chapters you read will show up here"
+msgstr ""
+
+#: src/widgets/history/row.blp:77 src/widgets/updates/row.blp:91
+msgid "Show chapters"
+msgstr ""
+
+#: src/widgets/history/row.blp:89 src/widgets/updates/row.blp:103
+msgid "Continue reading"
+msgstr ""
+
+#: src/widgets/history/row.py:88 src/widgets/manga/tracking.py:241
+#: src/widgets/updates/row.py:101
+#, python-brace-format
+msgid "{} chapters"
+msgstr ""
+
+#: src/widgets/home/page.blp:74
+msgid "Hello!"
+msgstr ""
+
+#: src/widgets/home/page.blp:75
+msgid "Your library is empty"
+msgstr ""
+
+#: src/widgets/home/page.blp:87
+msgid "Welcome to Kaori"
+msgstr ""
+
+#: src/widgets/home/page.blp:88
+msgid "Start by adding extension stores"
+msgstr ""
+
+#: src/widgets/library/category_edit.blp:34
+msgid "Save"
+msgstr ""
+
+#: src/widgets/library/category_edit.blp:53
+msgid "No Categories"
+msgstr ""
+
+#: src/widgets/library/category_edit.blp:54
+msgid "Create a category to organize your library."
+msgstr ""
+
+#: src/widgets/library/category_edit.blp:57
+#: src/widgets/library/category_manager.blp:5
+#: src/widgets/library/category_panel.blp:15
+msgid "Manage Categories"
+msgstr ""
+
+#: src/widgets/library/category_manager.blp:28
+msgid "New Category"
+msgstr ""
+
+#: src/widgets/library/category_manager.blp:31
+#: src/widgets/library/category_manager.py:52
+msgid "Name"
+msgstr ""
+
+#: src/widgets/library/category_manager.blp:38
+#: src/widgets/library/category_panel.blp:9 src/widgets/library/page.blp:50
+#: src/widgets/preferences/preferences.blp:437
+msgid "Categories"
+msgstr ""
+
+#: src/widgets/library/category_manager.py:70
+msgid "Use as default category"
+msgstr ""
+
+#: src/widgets/library/category_manager.py:77
+msgid "Delete category"
+msgstr ""
+
+#: src/widgets/library/category_panel.blp:22
+msgid "Search Categories"
+msgstr ""
+
+#: src/widgets/library/category_panel.blp:33
+msgid "Search categories"
+msgstr ""
+
+#: src/widgets/library/page.blp:5 src/widgets/main_view.blp:80
+#: src/widgets/main_view.blp:84 src/widgets/preferences/preferences.blp:201
+#: src/widgets/preferences/preferences.blp:432
+msgid "Library"
+msgstr ""
+
+#: src/widgets/library/page.blp:22
+msgid "Add some manga into the library"
+msgstr ""
+
+#: src/widgets/library/page.blp:23
+msgid "Find mangas from the search and browse pages"
+msgstr ""
+
+#: src/widgets/library/page.blp:35 src/widgets/search/page.blp:12
+msgid "Find a manga"
+msgstr ""
+
+#: src/widgets/library/page.blp:72
+msgid "Unread chapters"
+msgstr ""
+
+#: src/widgets/library/page.blp:84
+msgid "Total chapters"
+msgstr ""
+
+#: src/widgets/library/page.blp:97
+msgid "A–Z"
+msgstr ""
+
+#: src/widgets/library/page.blp:110
+msgid "Recently added"
+msgstr ""
+
+#: src/widgets/library/page.blp:123
+msgid "Recently read"
+msgstr ""
+
+#: src/widgets/library/page.blp:136
+msgid "Latest fetched chapter"
+msgstr ""
+
+#: src/widgets/library/page.blp:149
+msgid "Latest uploaded chapter"
+msgstr ""
+
+#: src/widgets/library/page.blp:164
+msgid "Reverse order"
+msgstr ""
+
+#: src/widgets/library/page.blp:195
+msgid "Started"
+msgstr ""
+
+#: src/widgets/library/page.blp:228
+msgid "Duplicate chapters"
+msgstr ""
+
+#: src/widgets/library/page.blp:241
+msgid "Pick none to show every status"
+msgstr ""
+
+#: src/widgets/library/page.blp:244
+msgid "Cancelled"
+msgstr ""
+
+#: src/widgets/library/page.blp:255
+msgid "Completed"
+msgstr ""
+
+#: src/widgets/library/page.blp:266
+msgid "Licensed"
+msgstr ""
+
+#: src/widgets/library/page.blp:277
+msgid "Ongoing"
+msgstr ""
+
+#: src/widgets/library/page.blp:288
+msgid "Hiatus"
+msgstr ""
+
+#: src/widgets/library/page.blp:299
+msgid "Publishing finished"
+msgstr ""
+
+#: src/widgets/library/page.blp:323 src/widgets/library/page.blp:327
+msgid "Source"
+msgstr ""
+
+#: src/widgets/library/page.py:114
+msgid "All sources"
+msgstr ""
+
+#: src/widgets/main_view.blp:129 src/widgets/main_view.blp:134
+#: src/widgets/preferences/preferences.blp:205 src/widgets/updates/page.blp:6
+msgid "Updates"
+msgstr ""
+
+#: src/widgets/main_view.blp:165
+msgid "Preferences"
+msgstr ""
+
+#: src/widgets/main_view.blp:169
+msgid "Shortcuts & Gestures"
+msgstr ""
+
+#: src/widgets/main_view.blp:177
+msgid "About Kaori"
+msgstr ""
+
+#: src/widgets/manga/page.blp:187 src/widgets/manga/tracking.blp:5
+#: src/widgets/manga/tracking.blp:11
+#: src/widgets/preferences/preferences.blp:447
+#: src/widgets/preferences/tracking.blp:6
+msgid "Tracking"
+msgstr ""
+
+#: src/widgets/manga/page.py:136
+msgid "Refresh failed"
+msgstr ""
+
+#: src/widgets/manga/page.py:143
+#, python-brace-format
+msgid "{} chapter"
+msgid_plural "{} chapters"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/widgets/manga/page.py:190 src/widgets/setup.blp:104
+msgid "Continue"
+msgstr ""
+
+#: src/widgets/manga/page.py:191
+msgid "Start"
+msgstr ""
+
+#: src/widgets/manga/page.py:202
+msgid "Remove from library"
+msgstr ""
+
+#: src/widgets/manga/page.py:203
+msgid "Add to library"
+msgstr ""
+
+#: src/widgets/manga/tracking.blp:35
+msgid "No Trackers"
+msgstr ""
+
+#: src/widgets/manga/tracking.blp:36
+msgid "Sign in to a tracker in Preferences, under Tracking"
+msgstr ""
+
+#: src/widgets/manga/tracking.blp:49
+msgid "Find on Tracker"
+msgstr ""
+
+#: src/widgets/manga/tracking.blp:81
+msgid "No Results"
+msgstr ""
+
+#: src/widgets/manga/tracking.py:51
+msgid "Couldn't load tracking"
+msgstr ""
+
+#: src/widgets/manga/tracking.py:107
+msgid "Not Tracked"
+msgstr ""
+
+#: src/widgets/manga/tracking.py:108
+msgid "Link this manga to keep your progress in sync"
+msgstr ""
+
+#: src/widgets/manga/tracking.py:113 src/widgets/manga/tracking.py:248
+msgid "Track"
+msgstr ""
+
+#: src/widgets/manga/tracking.py:120
+msgid "Stop Tracking"
+msgstr ""
+
+#: src/widgets/manga/tracking.py:126
+#, python-brace-format
+msgid "Open on {}"
+msgstr ""
+
+#: src/widgets/manga/tracking.py:144
+msgid "Chapters Read"
+msgstr ""
+
+#: src/widgets/manga/tracking.py:146
+#, python-brace-format
+msgid "Out of {}"
+msgstr ""
+
+#: src/widgets/manga/tracking.py:151
+msgid "Score"
+msgstr ""
+
+#: src/widgets/manga/tracking.py:158
+msgid "Private"
+msgstr ""
+
+#: src/widgets/manga/tracking.py:159
+msgid "Hide this entry from your public profile"
+msgstr ""
+
+#: src/widgets/manga/tracking.py:176
+msgid "Couldn't update the tracker"
+msgstr ""
+
+#: src/widgets/manga/tracking.py:198
+msgid "Couldn't stop tracking"
+msgstr ""
+
+#: src/widgets/manga/tracking.py:203
+#, python-brace-format
+msgid "Find on {}"
+msgstr ""
+
+#: src/widgets/manga/tracking.py:264
+msgid "Couldn't start tracking"
+msgstr ""
+
+#: src/widgets/preferences/backups.py:9
+#: src/widgets/preferences/preferences.blp:335
+msgid "Backups"
+msgstr ""
+
+#: src/widgets/preferences/backups.py:31
+msgid "Save Backup"
+msgstr ""
+
+#: src/widgets/preferences/backups.py:45
+msgid "Creating backup…"
+msgstr ""
+
+#: src/widgets/preferences/backups.py:52
+msgid "Couldn't create the backup"
+msgstr ""
+
+#: src/widgets/preferences/backups.py:54
+msgid "Backup saved"
+msgstr ""
+
+#: src/widgets/preferences/backups.py:57
+#: src/widgets/preferences/preferences.blp:386
+msgid "Restore Backup"
+msgstr ""
+
+#: src/widgets/preferences/backups.py:72
+msgid "This file isn't a backup Kaori can read"
+msgstr ""
+
+#: src/widgets/preferences/backups.py:82
+msgid "Some Things Are Missing"
+msgstr ""
+
+#: src/widgets/preferences/backups.py:83
+#, python-brace-format
+msgid ""
+"Install these sources or sign in to these trackers first, or their entries "
+"won't work:\n"
+"\n"
+"{}"
+msgstr ""
+
+#: src/widgets/preferences/backups.py:86
+msgid "Restore Anyway"
+msgstr ""
+
+#: src/widgets/preferences/backups.py:96
+msgid "Restoring backup…"
+msgstr ""
+
+#: src/widgets/preferences/backups.py:101
+#, python-brace-format
+msgid "Restoring backup… {} of {}"
+msgstr ""
+
+#: src/widgets/preferences/backups.py:111
+msgid "Backup restored"
+msgstr ""
+
+#: src/widgets/preferences/backups.py:113
+msgid "Couldn't restore the backup"
+msgstr ""
+
+#: src/widgets/preferences/extension_stores.blp:5
+#: src/widgets/preferences/preferences.blp:79
+msgid "Extension Stores"
+msgstr ""
+
+#: src/widgets/preferences/extension_stores.blp:15
+msgid "Stores that extensions can be installed from"
+msgstr ""
+
+#: src/widgets/preferences/extension_stores.blp:18
+msgid "Add store URL"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:15
+msgid "Reading"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:24
+msgid "Reading mode"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:29
+msgid "Webtoon Orientation"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:31 src/widgets/reader/dialog.blp:49
+msgid "Vertical"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:31 src/widgets/reader/dialog.blp:49
+msgid "Horizontal"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:37 src/widgets/reader/dialog.blp:31
+msgid "Reading Direction"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:39 src/widgets/reader/dialog.blp:36
+msgid "Left to Right"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:39 src/widgets/reader/dialog.blp:36
+msgid "Right to Left"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:47
+msgid "Library Display"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:50
+msgid "Display Mode"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:52
+msgid "Compact Grid"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:52
+msgid "Comfortable Grid"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:58
+msgid "Unread Badges"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:59
+msgid "Show unread chapters on covers"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:63
+msgid "Download Badges"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:64
+msgid "Show downloaded chapters on covers"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:80
+msgid "Where extensions can be installed from"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:91
+msgid "Install from File"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:92
+msgid "Install an extension APK you downloaded yourself"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:104
+msgid "Local Source"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:105
+msgid ""
+"Read manga stored on your computer. Put each manga in its own folder, with a "
+"folder or a CBZ for every chapter, and add a cover.jpg for a custom cover"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:110 src/widgets/setup.blp:310
+msgid "Local Source Folder"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:120
+#: src/widgets/preferences/preferences.blp:311
+#: src/widgets/preferences/preferences.blp:351 src/widgets/setup.blp:259
+#: src/widgets/setup.blp:319
+msgid "Use Default"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:124 src/widgets/setup.blp:323
+msgid "Use default local source folder"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:133
+#: src/widgets/preferences/preferences.blp:324
+#: src/widgets/preferences/preferences.blp:364 src/widgets/setup.blp:272
+#: src/widgets/setup.blp:332
+msgid "Open Folder"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:137 src/widgets/setup.blp:336
+msgid "Open local source folder"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:144
+msgid "Cloudflare Bypass"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:145
+msgid "Use FlareSolverr or Byparr to get past Cloudflare checks"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:149
+msgid "Use FlareSolverr"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:154
+#: src/widgets/preferences/preferences.blp:600
+msgid "Server URL"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:161
+msgid "Timeout"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:162
+msgid "Seconds to wait for a challenge"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:173
+msgid "Session Name"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:179
+msgid "Session Lifetime"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:180
+msgid "Minutes before cookies are forgotten"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:191
+msgid "Use Response as Fallback"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:192
+msgid "Use FlareSolverr's page when only Suwayomi sees a challenge"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:209
+msgid "Update Interval"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:210
+msgid "Hours between updates (0 = off, minimum 6)"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:221
+msgid "Parallel Sources"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:222
+msgid "Sources that can update or download at once"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:233
+msgid "Refresh Manga Details"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:234
+msgid "Also update titles, covers and descriptions"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:239
+#: src/widgets/preferences/preferences.blp:265
+msgid "Skip Manga with Unread Chapters"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:244
+msgid "Skip Manga You Haven't Started"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:249
+msgid "Skip Completed Manga"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:255
+msgid "Automatic Downloads"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:259
+msgid "Download New Chapters"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:260
+msgid "Download chapters found by library updates"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:270
+msgid "Unread Download Limit"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:271
+msgid "Stop when this many unread chapters are downloaded (0 = no limit)"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:282
+msgid "Ignore Re-uploads"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:283
+msgid "Don't download chapters that were uploaded again"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:294 src/widgets/setup.blp:282
+msgid "Save as CBZ Archive"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:295 src/widgets/setup.blp:283
+msgid "Compress each chapter into one CBZ file"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:300 src/widgets/setup.blp:250
+msgid "Download Location"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:315 src/widgets/setup.blp:263
+msgid "Use default download location"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:328 src/widgets/setup.blp:276
+msgid "Open download folder"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:336
+msgid "The server saves a copy of your library on a schedule"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:340
+msgid "Backup Location"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:355
+msgid "Use default backup location"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:368
+msgid "Open backup folder"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:374
+msgid "Create Backup"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:375
+msgid "Save a copy of your library to a file"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:387
+msgid "Bring back a library from a backup file"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:398
+msgid "Backup Time (HH:MM)"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:404
+msgid "Backup Interval"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:405
+msgid "Days between backups (0 = off)"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:416
+msgid "Keep Backups For"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:417
+msgid "Days before old backups are deleted (0 = keep)"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:428
+msgid "Backup Contents"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:429
+msgid "What scheduled backups include"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:457
+msgid "App Settings"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:462
+msgid "Server Settings"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:473
+msgid "Server"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:477
+msgid "Connection"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:480
+msgid "Suwayomi Instance"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:481
+msgid "Switch between a local or remote server"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:492
+msgid "Open in Browser"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:493
+msgid "Open the server's web interface"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:505
+msgid "Login"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:506
+msgid "Ask for a username and password before anyone can use the server"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:510
+msgid "Login Type"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:512
+msgid "No Login"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:512
+msgid "Basic Authentication"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:512
+msgid "Login Page"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:512
+msgid "Web Interface Login"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:517
+#: src/widgets/preferences/preferences.blp:576
+#: src/widgets/preferences/tracking.py:161
+#: src/widgets/preferences/tracking.py:209 src/widgets/setup.blp:167
+msgid "Username"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:521
+#: src/widgets/preferences/preferences.blp:582
+#: src/widgets/preferences/tracking.py:162
+#: src/widgets/preferences/tracking.py:210 src/widgets/setup.blp:172
+msgid "Password"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:525
+msgid "Save Login"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:531
+msgid "Background"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:534
+msgid "Keep Server Running in Background"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:535
+msgid "Keep the local server running after the window is closed"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:539
+msgid "Run on Startup"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:540
+msgid "Start the server when you log in"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:546
+msgid "Proxy"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:547
+msgid "Send the server's network traffic through a SOCKS proxy"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:551
+msgid "Use SOCKS Proxy"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:564
+msgid "Host"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:570
+msgid "Port"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:590
+msgid "SyncYomi"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:591
+msgid "Keep your library in sync with a SyncYomi server"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:595
+msgid "Use SyncYomi"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:607
+msgid "API Key"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:613
+msgid "Sync Library"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:618
+msgid "Sync Chapters"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:623
+msgid "Sync Categories"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:628
+msgid "Sync Tracking"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:633
+msgid "Sync History"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:638
+msgid "Sync Now"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:645
+msgid "OPDS Feed"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:646
+msgid "Let other reading apps browse your library"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:651
+msgid "Feed Address"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:659
+msgid "Copy Address"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:665
+msgid "Items per Page"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:676
+msgid "Only Show Unread Chapters"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:681
+msgid "Only Show Downloaded Chapters"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:686
+msgid "Mark as Read When Downloaded"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:692
+msgid "Maintenance"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:696
+msgid "Clear Image Cache"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:697
+msgid "Delete saved covers and pages that weren't downloaded"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:703
+msgid "Clear Cookies"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:704
+msgid "Sign out of every source website"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:710
+msgid "Debug Logs"
+msgstr ""
+
+#: src/widgets/preferences/preferences.blp:711
+msgid "Write more details to the server log"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:14 src/widgets/reader/dialog.blp:43
+msgid "Webtoon"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:15
+msgid "Single Page"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:16
+msgid "Double Page"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:320
+msgid "Couldn't open the folder"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:337
+msgid "Android Packages"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:341
+msgid "Install Extension"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:352
+msgid "Installing extension…"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:357
+msgid "Couldn't install the extension"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:359
+msgid "Extension installed"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:375
+msgid "Enter a username and password first"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:387
+msgid "Couldn't save the login"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:401
+msgid "Login saved"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:412
+msgid "Couldn't start syncing"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:415
+msgid "Sync started"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:416
+msgid "A sync is already running"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:417
+msgid "Turn on SyncYomi first"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:424
+msgid "Address copied"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:430
+msgid "Image cache cleared"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:431
+msgid "Couldn't clear the image cache"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:438
+msgid "Cookies cleared"
+msgstr ""
+
+#: src/widgets/preferences/preferences.py:439
+msgid "Couldn't clear cookies"
+msgstr ""
+
+#: src/widgets/preferences/tracking.blp:10
+msgid "Trackers"
+msgstr ""
+
+#: src/widgets/preferences/tracking.blp:11
+msgid ""
+"Sign in to keep your reading progress on sites like AniList and MyAnimeList"
+msgstr ""
+
+#: src/widgets/preferences/tracking.blp:15
+#: src/widgets/preferences/tracking.py:217
+msgid "KOReader Sync"
+msgstr ""
+
+#: src/widgets/preferences/tracking.blp:16
+msgid "Share reading progress with KOReader devices"
+msgstr ""
+
+#: src/widgets/preferences/tracking.blp:19
+msgid "Account"
+msgstr ""
+
+#: src/widgets/preferences/tracking.blp:20
+#: src/widgets/preferences/tracking.py:98
+#: src/widgets/preferences/tracking.py:197
+msgid "Not signed in"
+msgstr ""
+
+#: src/widgets/preferences/tracking.blp:25
+#: src/widgets/preferences/tracking.py:99
+#: src/widgets/preferences/tracking.py:148
+#: src/widgets/preferences/tracking.py:169
+#: src/widgets/preferences/tracking.py:198
+#: src/widgets/preferences/tracking.py:217 src/widgets/setup.blp:115
+#: src/widgets/setup.blp:152 src/widgets/setup.blp:186
+msgid "Sign In"
+msgstr ""
+
+#: src/widgets/preferences/tracking.blp:31
+msgid "When KOReader Is Ahead"
+msgstr ""
+
+#: src/widgets/preferences/tracking.blp:33
+#: src/widgets/preferences/tracking.blp:41
+msgid "Ask in the Web Interface"
+msgstr ""
+
+#: src/widgets/preferences/tracking.blp:33
+#: src/widgets/preferences/tracking.blp:41
+msgid "Keep This Progress"
+msgstr ""
+
+#: src/widgets/preferences/tracking.blp:33
+#: src/widgets/preferences/tracking.blp:41
+msgid "Use KOReader's Progress"
+msgstr ""
+
+#: src/widgets/preferences/tracking.blp:33
+#: src/widgets/preferences/tracking.blp:41
+msgid "Don't Sync"
+msgstr ""
+
+#: src/widgets/preferences/tracking.blp:39
+msgid "When KOReader Is Behind"
+msgstr ""
+
+#: src/widgets/preferences/tracking.py:94
+msgid "Signed in"
+msgstr ""
+
+#: src/widgets/preferences/tracking.py:95
+#: src/widgets/preferences/tracking.py:194
+msgid "Sign Out"
+msgstr ""
+
+#: src/widgets/preferences/tracking.py:121
+#: src/widgets/preferences/tracking.py:236
+msgid "Couldn't sign out"
+msgstr ""
+
+#: src/widgets/preferences/tracking.py:130
+msgid "Address After Signing In"
+msgstr ""
+
+#: src/widgets/preferences/tracking.py:132
+msgid "Open Sign-In Page"
+msgstr ""
+
+#: src/widgets/preferences/tracking.py:136
+msgid ""
+"Sign in on the page that opens. When you're sent to a new page, copy its "
+"address from the browser and paste it below."
+msgstr ""
+
+#: src/widgets/preferences/tracking.py:147
+#: src/widgets/preferences/tracking.py:168
+#, python-brace-format
+msgid "Sign In to {}"
+msgstr ""
+
+#: src/widgets/preferences/tracking.py:181
+#, python-brace-format
+msgid "Signed in to {}"
+msgstr ""
+
+#: src/widgets/preferences/tracking.py:183
+#, python-brace-format
+msgid "Couldn't sign in to {}"
+msgstr ""
+
+#: src/widgets/preferences/tracking.py:193
+#, python-brace-format
+msgid "{} on {}"
+msgstr ""
+
+#: src/widgets/preferences/tracking.py:207 src/widgets/setup.blp:80
+#: src/widgets/setup.blp:95
+msgid "Server Address"
+msgstr ""
+
+#: src/widgets/preferences/tracking.py:224
+#: src/widgets/preferences/tracking.py:228
+msgid "Couldn't sign in to KOReader Sync"
+msgstr ""
+
+#: src/widgets/reader/base.py:334
+#, python-brace-format
+msgid "Couldn't load page {}. Press R to retry"
+msgstr ""
+
+#: src/widgets/reader/canvas.py:60
+msgid "Couldn't load this page"
+msgstr ""
+
+#: src/widgets/reader/dialog.blp:5
+msgid "Settings"
+msgstr ""
+
+#: src/widgets/reader/dialog.blp:22
+msgid "Reading Mode"
+msgstr ""
+
+#: src/widgets/reader/dialog.blp:34
+msgid "Direction"
+msgstr ""
+
+#: src/widgets/reader/dialog.blp:47
+msgid "Orientation"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:5
+msgid "Reading in Kaori"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:18
+msgid "Start Reading"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:24
+msgid "You can see these again under Shortcuts &amp; Gestures in the main menu"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:27
+msgid "Turning Pages"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:30
+msgid "Next or Previous Page"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:31
+msgid "Arrow keys, Space, Page Up and Page Down"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:41
+msgid "Next or Previous Chapter"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:42
+msgid "Or press the period and comma keys"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:52
+msgid "First or Last Page"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:63
+msgid "Zooming and Moving"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:66 src/widgets/shortcuts.blp:87
+msgid "Zoom"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:67
+msgid "Pinch with two fingers on a touchpad or touchscreen"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:77
+msgid "Back to Normal Size"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:78
+msgid "Double-click or double-tap the page"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:88
+msgid "Move Around"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:89
+msgid "Scroll with two fingers, or click and drag"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:97
+msgid "Show the Top Bar"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:98
+msgid "Move the pointer to the top of the window"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:102
+msgid "Chapter List"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:103
+msgid "Or swipe left with two fingers"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:113
+msgid "Fullscreen"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:114
+msgid "Also F11"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:124
+msgid "Retry Pages That Failed"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:134
+msgid "Leave the Reader"
+msgstr ""
+
+#: src/widgets/reader/guide.blp:135
+msgid "Also the back button on your mouse"
+msgstr ""
+
+#: src/widgets/reader/page.blp:53
+msgid "Open Reader Settings"
+msgstr ""
+
+#: src/widgets/reader/page.blp:59
+msgid "Show Chapter Panel"
+msgstr ""
+
+#: src/widgets/reader/page.py:177 src/widgets/reader/webtoon.py:138
+#, python-brace-format
+msgid "Couldn't load {}"
+msgstr ""
+
+#: src/widgets/search/page.blp:33
+msgid "Search Everywhere"
+msgstr ""
+
+#: src/widgets/search/page.blp:34
+msgid "Find mangas from all available sources"
+msgstr ""
+
+#: src/widgets/search/page.blp:53
+msgid "No results found"
+msgstr ""
+
+#: src/widgets/search/page.blp:54
+msgid "More sources can be added from preferences"
+msgstr ""
+
+#: src/widgets/setup.blp:18
+msgid "Connect"
+msgstr ""
+
+#: src/widgets/setup.blp:29
+msgid "Connect to Suwayomi"
+msgstr ""
+
+#: src/widgets/setup.blp:30
+msgid "Run Suwayomi on this computer or connect to a server you already have"
+msgstr ""
+
+#: src/widgets/setup.blp:40
+msgid "Run Locally"
+msgstr ""
+
+#: src/widgets/setup.blp:41
+msgid "A Suwayomi server managed by Kaori"
+msgstr ""
+
+#: src/widgets/setup.blp:52 src/widgets/setup.blp:69
+msgid "Remote Server"
+msgstr ""
+
+#: src/widgets/setup.blp:53
+msgid "Connect to a server with its address"
+msgstr ""
+
+#: src/widgets/setup.blp:81
+msgid "The address you use to open Suwayomi in a browser"
+msgstr ""
+
+#: src/widgets/setup.blp:197
+msgid "Welcome"
+msgstr ""
+
+#: src/widgets/setup.blp:215
+msgid "Add an Extension Repo"
+msgstr ""
+
+#: src/widgets/setup.blp:216
+msgid ""
+"Kaori doesn't come with any sources. In Preferences, go to Sources and add a "
+"repo under Extension Stores."
+msgstr ""
+
+#: src/widgets/setup.blp:223
+msgid "Install Extensions"
+msgstr ""
+
+#: src/widgets/setup.blp:224
+msgid ""
+"Install the extensions for the sources you want. Kaori works with Mihon "
+"sources, so the Mihon guide is a good place to start."
+msgstr ""
+
+#: src/widgets/setup.blp:228
+msgid "Open Mihon Guide"
+msgstr ""
+
+#: src/widgets/setup.blp:238
+msgid "Set Up Downloads"
+msgstr ""
+
+#: src/widgets/setup.blp:239
+msgid ""
+"Chapters you download are saved in this folder. The default is fine unless "
+"you want them on another drive."
+msgstr ""
+
+#: src/widgets/setup.blp:294
+msgid "Add Local Comics"
+msgstr ""
+
+#: src/widgets/setup.blp:295
+msgid ""
+"Put each comic in its own folder inside the local source folder, with a "
+"folder or a CBZ for every chapter and a cover.jpg for a cover. You can pick "
+"a different folder below."
+msgstr ""
+
+#: src/widgets/setup.blp:345
+msgid "Local Source Guide"
+msgstr ""
+
+#: src/widgets/setup.blp:356
+msgid "You're All Set"
+msgstr ""
+
+#: src/widgets/setup.blp:357
+msgid ""
+"You can change any of this later in Preferences. Enjoy reading with Kaori!"
+msgstr ""
+
+#: src/widgets/setup.blp:371
+msgid "Back"
+msgstr ""
+
+#: src/widgets/setup.blp:404 src/widgets/setup.py:131
+msgid "Connecting…"
+msgstr ""
+
+#: src/widgets/setup.py:29
+msgid "Suwayomi on this computer"
+msgstr ""
+
+#: src/widgets/setup.py:129
+msgid "Starting the Local Server…"
+msgstr ""
+
+#: src/widgets/setup.py:171
+msgid "Get Started"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:6
+msgid "General"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:9
+msgid "Open Search"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:14
+msgid "Open Library"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:19
+msgid "Open Downloads"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:24
+msgid "Swipe left to open the chapter panel"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:33
+msgid "Next Page"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:38
+msgid "Previous Page"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:43
+msgid "Open Chapter Panel"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:48
+msgid "Toggle Fullscreen"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:53
+msgid "Scroll Up (Webtoon)"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:58
+msgid "Scroll Down (Webtoon)"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:63
+msgid "Zoom In"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:68
+msgid "Zoom Out"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:73
+msgid "Page Up (Webtoon)"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:78
+msgid "Snap zoom to 100%"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:79
+msgid "Double click to snap to 100%"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:84
+msgid "Reader Gestures"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:88
+msgid "Pinch with two fingers"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:93
+msgid "Pan"
+msgstr ""
+
+#: src/widgets/shortcuts.blp:94
+msgid "Scroll with two fingers on a touchpad"
+msgstr ""
+
+#: src/widgets/source/filter.blp:5 src/widgets/source/page.blp:48
+msgid "Filters"
+msgstr ""
+
+#: src/widgets/source/filter.blp:14
+msgid "Reset"
+msgstr ""
+
+#: src/widgets/source/filter.blp:23
+msgid "Apply"
+msgstr ""
+
+#: src/widgets/source/filter.blp:48
+msgid "No filters"
+msgstr ""
+
+#: src/widgets/source/filter.blp:49
+msgid "This source has no filters"
+msgstr ""
+
+#: src/widgets/source/page.blp:20 src/widgets/source/settings.py:15
+msgid "Source Settings"
+msgstr ""
+
+#: src/widgets/source/page.blp:42
+msgid "Find a comic"
+msgstr ""
+
+#: src/widgets/source/page.blp:64
+msgid "Popular"
+msgstr ""
+
+#: src/widgets/source/page.blp:85 src/widgets/source/page.blp:122
+#: src/widgets/source/page.blp:169
+msgid "No results"
+msgstr ""
+
+#: src/widgets/source/page.blp:92 src/widgets/source/page.blp:129
+#: src/widgets/source/page.blp:176
+msgid "Something went wrong"
+msgstr ""
+
+#: src/widgets/source/page.blp:101
+msgid "Latest"
+msgstr ""
+
+#: src/widgets/source/page.blp:148
+msgid "Find mangas from this source, with advanced filters"
+msgstr ""
+
+#: src/widgets/source/settings.py:26
+msgid "Couldn't load the settings"
+msgstr ""
+
+#: src/widgets/source/settings.py:92
+msgid "Couldn't save the setting"
+msgstr ""
+
+#: src/widgets/source/sources.blp:18
+msgid "No sources found"
+msgstr ""
+
+#: src/widgets/updates/page.blp:30
+msgid "No updates yet"
+msgstr ""
+
+#: src/widgets/updates/page.blp:31
+msgid "New chapters from your library will show up here"
+msgstr ""
+
+#: src/widgets/updates/page.py:259
+msgid "Stop Updating"
+msgstr ""
+
+#: src/widgets/updates/page.py:259
+msgid "Update Library"
+msgstr ""
+
+#: src/widgets/updates/page.py:269
+msgid "Updating library…"
+msgstr ""
+
+#: src/widgets/updates/page.py:274
+msgid "Couldn't update the library"
+msgstr ""

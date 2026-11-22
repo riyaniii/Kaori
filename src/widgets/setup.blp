@@ -1,0 +1,415 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriSetupDialog : Adw.Dialog {
+  content-width: 480;
+  content-height: 640;
+  can-close: false;
+
+  child: Adw.ToastOverlay toast_overlay {
+    child: Gtk.Stack stack {
+      transition-type: crossfade;
+
+      Gtk.StackPage {
+        name: "pages";
+
+        child: Adw.NavigationView navigation {
+          Adw.NavigationPage server_page {
+            title: _("Connect");
+            tag: "server";
+
+            child: Adw.ToolbarView {
+              [top]
+              Adw.HeaderBar {
+                show-title: false;
+              }
+
+              content: Adw.StatusPage {
+                icon-name: "network-server-symbolic";
+                title: _("Connect to Suwayomi");
+                description: _("Run Suwayomi on this computer or connect to a server you already have");
+
+                child: Adw.Clamp {
+                  maximum-size: 360;
+
+                  child: Gtk.ListBox {
+                    styles ["boxed-list"]
+                    selection-mode: none;
+
+                    Adw.ActionRow {
+                      title: _("Run Locally");
+                      subtitle: _("A Suwayomi server managed by Kaori");
+                      activatable: true;
+                      activated => $on_local_activated();
+
+                      [suffix]
+                      Gtk.Image {
+                        icon-name: "go-next-symbolic";
+                      }
+                    }
+
+                    Adw.ActionRow {
+                      title: _("Remote Server");
+                      subtitle: _("Connect to a server with its address");
+                      activatable: true;
+                      activated => $on_remote_activated();
+
+                      [suffix]
+                      Gtk.Image {
+                        icon-name: "go-next-symbolic";
+                      }
+                    }
+                  };
+                };
+              };
+            };
+          }
+
+          Adw.NavigationPage address_page {
+            title: _("Remote Server");
+            tag: "address";
+
+            child: Adw.ToolbarView {
+              [top]
+              Adw.HeaderBar {
+                show-title: false;
+              }
+
+              content: Adw.StatusPage {
+                icon-name: "network-server-symbolic";
+                title: _("Server Address");
+                description: _("The address you use to open Suwayomi in a browser");
+
+                child: Adw.Clamp {
+                  maximum-size: 360;
+
+                  child: Gtk.Box {
+                    orientation: vertical;
+                    spacing: 24;
+
+                    Gtk.ListBox {
+                      styles ["boxed-list"]
+                      selection-mode: none;
+
+                      Adw.EntryRow url_row {
+                        title: _("Server Address");
+                        input-purpose: url;
+                        text: "http://";
+                        entry-activated => $on_address_continue();
+                      }
+                    }
+
+                    Gtk.Button {
+                      styles ["suggested-action", "pill"]
+                      label: _("Continue");
+                      halign: center;
+                      clicked => $on_address_continue();
+                    }
+                  };
+                };
+              };
+            };
+          }
+
+          Adw.NavigationPage login_page {
+            title: _("Sign In");
+            tag: "login";
+
+            child: Adw.ToolbarView {
+              [top]
+              Adw.HeaderBar {
+                show-title: false;
+              }
+
+              content: Gtk.ScrolledWindow {
+                hscrollbar-policy: never;
+
+                child: Adw.Clamp {
+                  maximum-size: 360;
+                  valign: center;
+
+                  child: Gtk.Box {
+                    orientation: vertical;
+                    spacing: 24;
+                    margin-top: 24;
+                    margin-bottom: 24;
+                    margin-start: 12;
+                    margin-end: 12;
+
+                    Adw.Avatar login_avatar {
+                      size: 128;
+                      show-initials: true;
+                      text: bind username_row.text;
+                      halign: center;
+                    }
+
+                    Gtk.Box {
+                      orientation: vertical;
+                      spacing: 6;
+
+                      Gtk.Label {
+                        styles ["title-2"]
+                        label: _("Sign In");
+                      }
+
+                      Gtk.Label login_server_label {
+                        styles ["dimmed"]
+                        wrap: true;
+                        justify: center;
+                      }
+                    }
+
+                    Gtk.ListBox {
+                      styles ["boxed-list"]
+                      selection-mode: none;
+
+                      Adw.EntryRow username_row {
+                        title: _("Username");
+                        entry-activated => $on_sign_in();
+                      }
+
+                      Adw.PasswordEntryRow password_row {
+                        title: _("Password");
+                        entry-activated => $on_sign_in();
+                      }
+                    }
+
+                    Gtk.Label login_error_label {
+                      styles ["error"]
+                      wrap: true;
+                      justify: center;
+                      visible: false;
+                    }
+
+                    Gtk.Button {
+                      styles ["suggested-action", "pill"]
+                      label: _("Sign In");
+                      halign: center;
+                      clicked => $on_sign_in();
+                    }
+                  };
+                };
+              };
+            };
+          }
+
+          Adw.NavigationPage tour_page {
+            title: _("Welcome");
+            tag: "tour";
+            can-pop: false;
+
+            child: Adw.ToolbarView {
+              [top]
+              Adw.HeaderBar {
+                show-title: false;
+              }
+
+              content: Adw.Carousel carousel {
+                interactive: false;
+                notify::position => $on_position_changed();
+
+              Adw.StatusPage repo_page {
+                hexpand: true;
+                styles ["compact"]
+                icon-name: "folder-download-symbolic";
+                title: _("Add an Extension Repo");
+                description: _("Kaori doesn't come with any sources. In Preferences, go to Sources and add a repo under Extension Stores.");
+              }
+
+              Adw.StatusPage extensions_page {
+                hexpand: true;
+                styles ["compact"]
+                icon-name: "application-x-addon-symbolic";
+                title: _("Install Extensions");
+                description: _("Install the extensions for the sources you want. Kaori works with Mihon sources, so the Mihon guide is a good place to start.");
+
+                child: Gtk.Button {
+                  styles ["pill"]
+                  label: _("Open Mihon Guide");
+                  halign: center;
+                  clicked => $on_guide();
+                };
+              }
+
+              Adw.StatusPage downloads_page {
+                hexpand: true;
+                styles ["compact"]
+                icon-name: "document-save-symbolic";
+                title: _("Set Up Downloads");
+                description: _("Chapters you download are saved in this folder. The default is fine unless you want them on another drive.");
+
+                child: Adw.Clamp {
+                  maximum-size: 340;
+
+                  child: Gtk.ListBox {
+                    styles ["boxed-list"]
+                    selection-mode: none;
+
+                    Adw.ActionRow downloads_folder_row {
+                      styles ["property"]
+                      title: _("Download Location");
+                      activatable: true;
+                      activated => $on_path_activated();
+
+                      [suffix]
+                      Gtk.Button {
+                        styles ["flat"]
+                        valign: center;
+                        icon-name: "edit-clear-symbolic";
+                        tooltip-text: _("Use Default");
+                        clicked => $on_path_cleared();
+
+                        accessibility {
+                          label: _("Use default download location");
+                        }
+                      }
+
+                      [suffix]
+                      Gtk.Button {
+                        styles ["flat"]
+                        valign: center;
+                        icon-name: "folder-open-symbolic";
+                        tooltip-text: _("Open Folder");
+                        clicked => $on_open_folder();
+
+                        accessibility {
+                          label: _("Open download folder");
+                        }
+                      }
+                    }
+
+                    Adw.SwitchRow cbz_row {
+                      title: _("Save as CBZ Archive");
+                      subtitle: _("Compress each chapter into one CBZ file");
+                      notify::active => $on_switch_toggled();
+                    }
+                  };
+                };
+              }
+
+              Adw.StatusPage local_page {
+                hexpand: true;
+                styles ["compact"]
+                icon-name: "drive-removable-media-symbolic";
+                title: _("Add Local Comics");
+                description: _("Put each comic in its own folder inside the local source folder, with a folder or a CBZ for every chapter and a cover.jpg for a cover. You can pick a different folder below.");
+
+                child: Gtk.Box {
+                  orientation: vertical;
+                  spacing: 12;
+
+                  Adw.Clamp {
+                    maximum-size: 340;
+
+                    child: Gtk.ListBox {
+                      styles ["boxed-list"]
+                      selection-mode: none;
+
+                      Adw.ActionRow local_folder_row {
+                        styles ["property"]
+                        title: _("Local Source Folder");
+                        activatable: true;
+                        activated => $on_path_activated();
+
+                        [suffix]
+                        Gtk.Button {
+                          styles ["flat"]
+                          valign: center;
+                          icon-name: "edit-clear-symbolic";
+                          tooltip-text: _("Use Default");
+                          clicked => $on_path_cleared();
+
+                          accessibility {
+                            label: _("Use default local source folder");
+                          }
+                        }
+
+                        [suffix]
+                        Gtk.Button {
+                          styles ["flat"]
+                          valign: center;
+                          icon-name: "folder-open-symbolic";
+                          tooltip-text: _("Open Folder");
+                          clicked => $on_open_folder();
+
+                          accessibility {
+                            label: _("Open local source folder");
+                          }
+                        }
+                      }
+                    };
+                  }
+
+                  Gtk.Button {
+                    styles ["pill"]
+                    label: _("Local Source Guide");
+                    halign: center;
+                    clicked => $on_local_guide();
+                  }
+                };
+              }
+
+              Adw.StatusPage done_page {
+                hexpand: true;
+                styles ["compact"]
+                icon-name: "circle-check-cross-symbolic";
+                title: _("You're All Set");
+                description: _("You can change any of this later in Preferences. Enjoy reading with Kaori!");
+              }
+              };
+
+            [bottom]
+            Gtk.CenterBox {
+              margin-start: 12;
+              margin-end: 12;
+              margin-top: 6;
+              margin-bottom: 12;
+
+              [start]
+              Gtk.Button back_button {
+                styles ["flat"]
+                label: _("Back");
+                valign: center;
+                clicked => $on_back();
+              }
+
+              [center]
+              Adw.CarouselIndicatorDots {
+                carousel: carousel;
+              }
+
+              [end]
+              Gtk.Button next_button {
+                styles ["suggested-action", "pill"]
+                label: _("Next");
+                valign: center;
+                clicked => $on_next();
+              }
+            }
+            };
+          }
+        };
+      }
+
+      Gtk.StackPage {
+        name: "busy";
+
+        child: Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar {
+            show-title: false;
+          }
+
+          content: Adw.StatusPage busy_page {
+            title: _("Connecting…");
+
+            child: Adw.Spinner {
+              width-request: 48;
+              height-request: 48;
+            };
+          };
+        };
+      }
+    };
+  };
+}

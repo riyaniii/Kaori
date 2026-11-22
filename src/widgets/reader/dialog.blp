@@ -1,0 +1,56 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriSettingsDialog : Adw.Dialog {
+  title: _("Settings");
+  can-close: true;
+
+  content-width: 420;
+  content-height: 350;
+
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {}
+
+    content: Adw.PreferencesPage {
+      margin-start: 6;
+      margin-end: 6;
+      margin-top: 6;
+      margin-bottom: 6;
+
+      Adw.PreferencesGroup {
+        title: _("Reading Mode");
+
+        Adw.InlineViewSwitcher {
+          stack: bind template.stack;
+          margin-bottom: 6;
+        }
+      }
+
+      Adw.PreferencesGroup {
+        title: _("Reading Direction");
+
+        Adw.ComboRow direction_row {
+          title: _("Direction");
+          model: Gtk.StringList {
+            strings [_("Left to Right"), _("Right to Left")]
+          };
+          notify::selected => $on_direction_changed();
+        }
+      }
+
+      Adw.PreferencesGroup webtoon_group {
+        title: _("Webtoon");
+        visible: bind $is_webtoon(template.stack as <Adw.ViewStack> .visible-child-name) as <bool>;
+
+        Adw.ComboRow orientation_row {
+          title: _("Orientation");
+          model: Gtk.StringList {
+            strings [_("Vertical"), _("Horizontal")]
+          };
+          notify::selected => $on_orientation_changed();
+        }
+      }
+    };
+  };
+}

@@ -1,0 +1,84 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriExtensionDialog : Adw.Dialog {
+  title: bind template.model as <$KaoriExtension> .name;
+  can-close: true;
+  content-width: 420;
+  content-height: 520;
+
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {}
+
+    content: Gtk.ScrolledWindow {
+      hscrollbar-policy: never;
+
+      child: Gtk.Box {
+        orientation: vertical;
+        spacing: 24;
+        margin-top: 12;
+        margin-bottom: 12;
+        margin-start: 12;
+        margin-end: 12;
+
+        Gtk.Box {
+          orientation: vertical;
+          spacing: 12;
+
+          Gtk.Image {
+            paintable: bind template.model as <$KaoriExtension> .paintable;
+            pixel-size: 96;
+          }
+
+          Gtk.Label {
+            styles ["title-2"]
+            wrap: true;
+            justify: center;
+            label: bind template.model as <$KaoriExtension> .name;
+          }
+        }
+
+        Adw.PreferencesGroup {
+          Adw.ActionRow {
+            styles ["property"]
+            title: _("Version");
+            subtitle: bind template.model as <$KaoriExtension> .version_name;
+            subtitle-selectable: true;
+          }
+
+          Adw.ActionRow {
+            styles ["property"]
+            title: _("Language");
+            subtitle: bind $get_language(template.model as <$KaoriExtension> .lang) as <string>;
+          }
+
+          Adw.ActionRow {
+            styles ["property"]
+            title: _("Age rating");
+            subtitle: bind $get_age_rating(template.model as <$KaoriExtension> .is_nsfw) as <string>;
+          }
+
+          Adw.ActionRow {
+            styles ["property"]
+            title: _("Status");
+            subtitle: bind $get_status(
+              template.model as <$KaoriExtension> .is_installed,
+              template.model as <$KaoriExtension> .has_update,
+              template.model as <$KaoriExtension> .is_obsolete
+            ) as <string>;
+          }
+        }
+
+        Adw.PreferencesGroup {
+          Adw.ActionRow {
+            styles ["property"]
+            title: _("Package");
+            subtitle: bind template.model as <$KaoriExtension> .pkg_name;
+            subtitle-selectable: true;
+          }
+        }
+      };
+    };
+  };
+}

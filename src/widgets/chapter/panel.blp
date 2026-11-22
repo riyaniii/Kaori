@@ -1,0 +1,199 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriChapterPanel : Adw.NavigationPage {
+  title: _("Chapters");
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      show-title: true;
+
+      [end]
+      Gtk.Button {
+        icon-name: "filter-symbolic";
+        tooltip-text: _("Sort and Filter");
+        clicked => $on_options_clicked();
+      }
+    }
+
+    content: Gtk.Stack stack {
+      transition-type: crossfade;
+
+      Gtk.StackPage {
+        name: "empty";
+        child: Adw.StatusPage empty_page {
+          title: _(":(");
+          description: _("No Chapters");
+        };
+      }
+
+      Gtk.StackPage {
+        name: "list";
+        child: Gtk.ScrolledWindow {
+          hscrollbar-policy: never;
+          child: $KaoriChapterList chapter_list {
+            width-request: 300;
+            chapter-activated => $on_chapter_activated();
+          };
+        };
+      }
+    };
+  };
+}
+
+Adw.PreferencesDialog options_dialog {
+  title: _("Sort & Filter");
+
+  Adw.PreferencesPage {
+    title: _("Sort");
+    icon-name: "view-sort-descending-symbolic";
+
+    Adw.PreferencesGroup {
+      title: _("Sort by");
+
+      Adw.ActionRow {
+        title: _("Source order");
+        activatable-widget: sort_source;
+
+        [prefix]
+        Gtk.CheckButton sort_source {
+          valign: center;
+          action-name: "chapters.sort-key";
+          action-target: "'source'";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Chapter number");
+        activatable-widget: sort_number;
+
+        [prefix]
+        Gtk.CheckButton sort_number {
+          valign: center;
+          group: sort_source;
+          action-name: "chapters.sort-key";
+          action-target: "'number'";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Upload date");
+        activatable-widget: sort_upload;
+
+        [prefix]
+        Gtk.CheckButton sort_upload {
+          valign: center;
+          group: sort_source;
+          action-name: "chapters.sort-key";
+          action-target: "'upload'";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Date fetched");
+        activatable-widget: sort_fetched;
+
+        [prefix]
+        Gtk.CheckButton sort_fetched {
+          valign: center;
+          group: sort_source;
+          action-name: "chapters.sort-key";
+          action-target: "'fetched'";
+        }
+      }
+    }
+
+    Adw.PreferencesGroup {
+      Adw.ActionRow {
+        title: _("Newest first");
+        activatable-widget: descending_switch;
+
+        [suffix]
+        Gtk.Switch descending_switch {
+          valign: center;
+          action-name: "chapters.descending";
+        }
+      }
+    }
+  }
+
+  Adw.PreferencesPage {
+    title: _("Filter");
+    icon-name: "filter-symbolic";
+
+    Adw.PreferencesGroup {
+      title: _("Show only");
+
+      Adw.ActionRow {
+        title: _("Unread");
+        activatable-widget: unread_switch;
+
+        [suffix]
+        Gtk.Switch unread_switch {
+          valign: center;
+          action-name: "chapters.filter-unread";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Downloaded");
+        activatable-widget: downloaded_switch;
+
+        [suffix]
+        Gtk.Switch downloaded_switch {
+          valign: center;
+          action-name: "chapters.filter-downloaded";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Bookmarked");
+        activatable-widget: bookmarked_switch;
+
+        [suffix]
+        Gtk.Switch bookmarked_switch {
+          valign: center;
+          action-name: "chapters.filter-bookmarked";
+        }
+      }
+    }
+
+    Adw.PreferencesGroup scanlator_group {
+      title: _("Scanlator");
+    }
+  }
+
+  Adw.PreferencesPage {
+    title: _("Display");
+    icon-name: "view-list-symbolic";
+
+    Adw.PreferencesGroup {
+      title: _("Chapter label");
+
+      Adw.ActionRow {
+        title: _("Source title");
+        activatable-widget: display_title;
+
+        [prefix]
+        Gtk.CheckButton display_title {
+          valign: center;
+          action-name: "chapters.display-mode";
+          action-target: "'title'";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Chapter number");
+        activatable-widget: display_number;
+
+        [prefix]
+        Gtk.CheckButton display_number {
+          valign: center;
+          group: display_title;
+          action-name: "chapters.display-mode";
+          action-target: "'number'";
+        }
+      }
+    }
+  }
+}

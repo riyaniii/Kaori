@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2026 Riyan Parvez -->
+<component type="desktop-application">
+  <id>io.github.riyaniii.Kaori</id>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>Kaori</name>
+  <summary>Discover and read comics</summary>
+
+  <developer id="io.github.riyaniii">
+    <name>Riyan Parvez</name>
+  </developer>
+
+  <description>
+    <p>
+      Discover, download and read comics with a beautiful interface and
+      natural touchpad gestures.
+    </p>
+    <ul>
+      <li>Browse and search comics from many sources</li>
+      <li>Download chapters to read offline</li>
+      <li>Single page, double page and webtoon reading modes</li>
+      <li>Track your progress on AniList, MyAnimeList and more</li>
+      <li>Run Suwayomi on your computer or connect to your own server</li>
+    </ul>
+    <p>
+      Kaori is made and maintained by a student. If you enjoy it, please
+      consider donating to support its development.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.riyaniii.Kaori.desktop</launchable>
+
+  <url type="homepage">https://github.com/riyaniii/Kaori</url>
+  <url type="vcs-browser">https://github.com/riyaniii/Kaori</url>
+  <url type="bugtracker">https://github.com/riyaniii/Kaori/issues</url>
+  <url type="contact">https://github.com/riyaniii</url>
+  <url type="contribute">https://github.com/riyaniii/Kaori</url>
+  <url type="donation">https://buymeacoffee.com/riyanparvez</url>
+
+  <translation type="gettext">kaori</translation>
+
+  <content_rating type="oars-1.1"/>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#FFD700</color>
+    <color type="primary" scheme_preference="dark">#3F4F82</color>
+  </branding>
+
+  <requires>
+    <display_length compare="ge">768</display_length>
+  </requires>
+
+  <screenshots>
+    <screenshot type="default">
+      <image>https://github.com/riyaniii/Kaori/blob/main/assets/Screenshots/home.png?raw=true</image>
+      <caption>Home</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/riyaniii/Kaori/blob/main/assets/Screenshots/search.png?raw=true</image>
+      <caption>Search</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/riyaniii/Kaori/blob/main/assets/Screenshots/reader.png?raw=true</image>
+      <caption>Reader</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/riyaniii/Kaori/blob/main/assets/Screenshots/comic.png?raw=true</image>
+      <caption>Comic Details</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/riyaniii/Kaori/blob/main/assets/Screenshots/downloads.png?raw=true</image>
+      <caption>Downloads</caption>
+    </screenshot>
+  </screenshots>
+
+  <releases>
+    <release version="1.0.0" date="2026-11-22">
+      <url type="details">https://github.com/riyaniii/Kaori/releases/tag/1.0.0</url>
+      <description translate="no">
+        <ul>
+          <li>Sign in to Suwayomi servers that need a login.</li>
+          <li>Added tracking with AniList, MyAnimeList and more.</li>
+          <li>Added backups, source settings and more server options.</li>
+          <li>Live download and library update progress.</li>
+          <li>Kaori can now be translated.</li>
+          <li>A new welcome and sign-in flow, and a guide for the reader.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.9.8" date="2026-10-20">
+      <url type="details">https://github.com/riyaniii/Kaori/releases/tag/v0.9.8</url>
+      <description translate="no">
+        <ul>
+          <li>Major refactor.</li>
+          <li>Added the History and Updates pages.</li>
+          <li>Made the preferences page more accessible.</li>
+          <li>Added Library Categories.</li>
+          <li>Added a manga context menu.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.9.6" date="2026-10-17">
+      <url type="details">https://github.com/riyaniii/Kaori/releases/tag/v0.9.6</url>
+      <description translate="no">
+        <ul>
+          <li>Refactor.</li>
+          <li>Made the server startup on login and run in the background for near-instant startup times.</li>
+          <li>Added an appindicator tray.</li>
+          <li>Settings parity with Suwayomi Server.</li>
+          <li>Added option to change the local source's path.</li>
+          <li>Added a dialog for guiding users that aren't familiar with Suwayomi or the Mihon ecosystem.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.9.5" date="2026-10-16">
+      <url type="details">https://github.com/riyaniii/Kaori/releases/tag/v0.9.5</url>
+      <description translate="no">
+        <ul>
+          <li>Added F and F11 shortcuts to enter and exit fullscreen.</li>
+          <li>Added a badge count for active downloads in the sidebar.</li>
+          <li>Redesigned the manga details page.</li>
+          <li>Manga cards now have a fixed size.</li>
+          <li>Made the extensions page reactive and improved the list styling.</li>
+          <li>Downloads now keep updating in the background.</li>
+          <li>Added the swipe to open chapter panel gesture and Toggle Fullscreen to the shortcuts dialog.</li>
+          <li>Fixed kinetic scrolling conflicting with keyboard navigation.</li>
+          <li>Fixed the title being selected automatically.</li>
+          <li>Increased the minimum sidebar width in the experimental macOS port.</li>
+          <li>Added Buy Me a Coffee support links.</li>
+          <li>Added contributor credits and CONTRIBUTING.md.</li>
+          <li>Updated Suwayomi-Server.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.9.2" date="2026-10-13">
+      <url type="details">https://github.com/riyaniii/Kaori/releases/tag/v0.9.2</url>
+      <description translate="no">
+        <ul>
+          <li>Comic cards maintain their aspect ratios.</li>
+          <li>UI tweaks.</li>
+          <li>Updated Suwayomi-Server.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.9.0" date="2026-10-11">
+      <url type="details">https://github.com/riyaniii/Kaori/releases/tag/v0.9.0</url>
+      <description translate="no">
+        <ul>
+          <li>Added gestures and keyboard shortcuts to the shortcuts dialog.</li>
+          <li>Added extension and source support for languages other than English.</li>
+          <li>Updated the reader header to hide and reveal itself like a video player.</li>
+          <li>Improved UI margins around pages.</li>
+          <li>Fixed incorrect manga overview cover sizing.</li>
+          <li>Updated Suwayomi-Server.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.8.8" date="2026-09-23">
+      <url type="details">https://github.com/riyaniii/Kaori/releases/tag/v0.8.8</url>
+      <description translate="no">
+        <p>Added managed server.</p>
+      </description>
+    </release>
+  </releases>
+</component>

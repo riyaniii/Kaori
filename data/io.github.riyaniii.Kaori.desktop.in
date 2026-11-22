@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Kaori
+Comment=Discover and read comics
+Exec=kaori
+Icon=io.github.riyaniii.Kaori
+Terminal=false
+Type=Application
+Categories=Utility;
+Keywords=Manga;Manhwa;Manhua;Comics;Comic;Reader;Suwayomi;Mihon;Tachiyomi;Komikku;
+StartupNotify=true
+DBusActivatable=true

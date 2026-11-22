@@ -1,0 +1,27 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriExtensionStoresDialog : Adw.Dialog {
+  title: _("Extension Stores");
+  content-width: 480;
+  content-height: 520;
+
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {}
+
+    content: Adw.PreferencesPage {
+      Adw.PreferencesGroup {
+        description: _("Stores that extensions can be installed from");
+
+        Adw.EntryRow url_entry {
+          title: _("Add store URL");
+          show-apply-button: true;
+          apply => $on_add();
+        }
+      }
+
+      Adw.PreferencesGroup stores_group {}
+    };
+  };
+}

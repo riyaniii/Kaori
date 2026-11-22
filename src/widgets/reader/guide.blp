@@ -1,0 +1,146 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriReaderGuide : Adw.Dialog {
+  title: _("Reading in Kaori");
+  content-width: 480;
+  content-height: 640;
+
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      show-start-title-buttons: false;
+      show-end-title-buttons: false;
+
+      [end]
+      Gtk.Button {
+        styles ["suggested-action"]
+        label: _("Start Reading");
+        clicked => $on_done_clicked();
+      }
+    }
+
+    content: Adw.PreferencesPage {
+      description: _("You can see these again under Shortcuts &amp; Gestures in the main menu");
+
+      Adw.PreferencesGroup {
+        title: _("Turning Pages");
+
+        Adw.ActionRow {
+          title: _("Next or Previous Page");
+          subtitle: _("Arrow keys, Space, Page Up and Page Down");
+
+          [suffix]
+          Gtk.ShortcutLabel {
+            accelerator: "Right";
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("Next or Previous Chapter");
+          subtitle: _("Or press the period and comma keys");
+
+          [suffix]
+          Gtk.ShortcutLabel {
+            accelerator: "<Control>Right";
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("First or Last Page");
+
+          [suffix]
+          Gtk.ShortcutLabel {
+            accelerator: "Home";
+            valign: center;
+          }
+        }
+      }
+
+      Adw.PreferencesGroup {
+        title: _("Zooming and Moving");
+
+        Adw.ActionRow {
+          title: _("Zoom");
+          subtitle: _("Pinch with two fingers on a touchpad or touchscreen");
+
+          [suffix]
+          Gtk.ShortcutLabel {
+            accelerator: "<Control>plus";
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("Back to Normal Size");
+          subtitle: _("Double-click or double-tap the page");
+
+          [suffix]
+          Gtk.ShortcutLabel {
+            accelerator: "<Control>0";
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("Move Around");
+          subtitle: _("Scroll with two fingers, or click and drag");
+        }
+      }
+
+      Adw.PreferencesGroup {
+        title: _("Reader");
+
+        Adw.ActionRow {
+          title: _("Show the Top Bar");
+          subtitle: _("Move the pointer to the top of the window");
+        }
+
+        Adw.ActionRow {
+          title: _("Chapter List");
+          subtitle: _("Or swipe left with two fingers");
+
+          [suffix]
+          Gtk.ShortcutLabel {
+            accelerator: "<Control>s";
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("Fullscreen");
+          subtitle: _("Also F11");
+
+          [suffix]
+          Gtk.ShortcutLabel {
+            accelerator: "f";
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("Retry Pages That Failed");
+
+          [suffix]
+          Gtk.ShortcutLabel {
+            accelerator: "r";
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("Leave the Reader");
+          subtitle: _("Also the back button on your mouse");
+
+          [suffix]
+          Gtk.ShortcutLabel {
+            accelerator: "Escape";
+            valign: center;
+          }
+        }
+      }
+    };
+  };
+}

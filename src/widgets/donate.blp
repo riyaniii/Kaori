@@ -1,0 +1,61 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriDonateDialog : Adw.Dialog {
+  title: _("Support Kaori");
+  content-width: 400;
+
+  child: Adw.ToolbarView {
+    styles ["donate"]
+
+    [top]
+    Adw.HeaderBar {
+      show-title: false;
+    }
+
+    content: Gtk.Box {
+      orientation: vertical;
+      spacing: 18;
+      margin-start: 24;
+      margin-end: 24;
+      margin-bottom: 24;
+
+      Gtk.Image {
+        icon-name: "heart-filled-symbolic";
+        pixel-size: 64;
+      }
+
+      Gtk.Label {
+        styles ["title-1"]
+        label: _("Support Kaori");
+        wrap: true;
+        justify: center;
+      }
+
+      Gtk.Label {
+        label: _("Kaori is made and maintained by a student in their free time. If you enjoy it, please consider donating, it really helps keep the app going.");
+        wrap: true;
+        justify: center;
+      }
+
+      Gtk.Box {
+        orientation: vertical;
+        spacing: 6;
+        margin-top: 6;
+        halign: center;
+
+        Gtk.Button {
+          styles ["pill", "donate-button"]
+          label: _("Buy Me a Coffee");
+          clicked => $on_donate_clicked();
+        }
+
+        Gtk.Button {
+          styles ["pill", "flat"]
+          label: _("Maybe Later");
+          clicked => $on_later_clicked();
+        }
+      }
+    };
+  };
+}

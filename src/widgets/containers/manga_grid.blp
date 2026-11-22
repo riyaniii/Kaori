@@ -1,0 +1,49 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriMangaGrid : Adw.BreakpointBin {
+  hexpand: true;
+  vexpand: true;
+  width-request: 10;
+  height-request: 10;
+
+  child: Gtk.ScrolledWindow {
+    hscrollbar-policy: never;
+    vscrollbar-policy: automatic;
+
+    child: Gtk.GridView grid {
+      styles [
+      "manga-grid"
+      ]
+      single-click-activate: true;
+      hscroll-policy: natural;
+      vscroll-policy: natural;
+
+      min-columns: 6;
+    };
+  };
+  Adw.Breakpoint {
+    condition ("max-width: 1300sp")
+    setters {
+      grid.min-columns: 5;
+    }
+  }
+  Adw.Breakpoint {
+    condition ("max-width: 1000sp")
+    setters {
+      grid.min-columns: 4;
+    }
+  }
+  Adw.Breakpoint {
+    condition ("max-width: 700sp")
+    setters {
+      grid.min-columns: 3;
+    }
+  }
+  Adw.Breakpoint {
+    condition ("max-width: 400sp")
+    setters {
+      grid.min-columns: 2;
+    }
+  }
+}

@@ -1,0 +1,95 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriTrackingDialog : Adw.Dialog {
+  title: _("Tracking");
+  content-width: 480;
+  content-height: 560;
+
+  child: Adw.NavigationView navigation {
+    Adw.NavigationPage {
+      title: _("Tracking");
+      tag: "trackers";
+
+      child: Adw.ToolbarView {
+        [top]
+        Adw.HeaderBar {}
+
+        content: Gtk.Stack stack {
+          transition-type: crossfade;
+
+          Gtk.StackPage {
+            name: "loading";
+            child: Adw.Spinner {
+              halign: center;
+              valign: center;
+              width-request: 48;
+              height-request: 48;
+            };
+          }
+
+          Gtk.StackPage {
+            name: "empty";
+            child: Adw.StatusPage {
+              icon-name: "arrows-circle-symbolic";
+              title: _("No Trackers");
+              description: _("Sign in to a tracker in Preferences, under Tracking");
+            };
+          }
+
+          Gtk.StackPage {
+            name: "trackers";
+            child: Adw.PreferencesPage trackers_page {};
+          }
+        };
+      };
+    }
+
+    Adw.NavigationPage search_page {
+      title: _("Find on Tracker");
+      tag: "search";
+
+      child: Adw.ToolbarView {
+        [top]
+        Adw.HeaderBar {}
+
+        [top]
+        Gtk.SearchEntry search_entry {
+          margin-start: 12;
+          margin-end: 12;
+          margin-bottom: 6;
+          activate => $on_search_activate();
+        }
+
+        content: Gtk.Stack search_stack {
+          transition-type: crossfade;
+
+          Gtk.StackPage {
+            name: "loading";
+            child: Adw.Spinner {
+              halign: center;
+              valign: center;
+              width-request: 48;
+              height-request: 48;
+            };
+          }
+
+          Gtk.StackPage {
+            name: "empty";
+            child: Adw.StatusPage {
+              icon-name: "system-search-symbolic";
+              title: _("No Results");
+            };
+          }
+
+          Gtk.StackPage {
+            name: "results";
+            child: Adw.PreferencesPage {
+              Adw.PreferencesGroup results_group {}
+            };
+          }
+        };
+      };
+    }
+  };
+}

@@ -1,0 +1,97 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriBrowsePage : Adw.NavigationPage {
+  title: _("Browse");
+  tag: "browse";
+
+  child: Adw.BreakpointBin {
+    width-request: 360;
+    height-request: 294;
+
+    child: Adw.ToolbarView {
+      [top]
+      Adw.HeaderBar {
+        title-widget: Gtk.Box {
+          halign: center;
+
+          Adw.ViewSwitcher view_switcher {
+            stack: browse_stack;
+            policy: wide;
+          }
+
+          Adw.WindowTitle window_title {
+            title: _("Browse");
+            visible: false;
+          }
+        };
+
+        [start]
+        Gtk.Button {
+          icon-name: "translate-symbolic";
+          tooltip-text: _("Languages");
+          clicked => $on_languages_clicked();
+        }
+
+        [end]
+        Gtk.ToggleButton search_button {
+          icon-name: "edit-find-symbolic";
+          tooltip-text: _("Search");
+        }
+      }
+
+      [top]
+      Gtk.SearchBar search_bar {
+        search-mode-enabled: bind search_button.active bidirectional;
+        notify::search-mode-enabled => $on_search_mode_changed();
+
+        child: Adw.Clamp {
+          maximum-size: 500;
+          tightening-threshold: 400;
+
+          child: Gtk.SearchEntry search_entry {
+            hexpand: true;
+            placeholder-text: bind $get_placeholder(browse_stack.visible-child-name) as <string>;
+            search-changed => $on_search_changed();
+            search-started => $on_search_started();
+          };
+        };
+      }
+
+      content: Adw.ViewStack browse_stack {
+        Adw.ViewStackPage {
+          name: "sources";
+          title: _("Sources");
+          icon-name: "chain-link-symbolic";
+
+          child: Adw.NavigationView source_nav_view {
+            $KaoriSourcesPage sources_page {}
+          };
+        }
+
+        Adw.ViewStackPage {
+          name: "extensions";
+          title: _("Extensions");
+          icon-name: "application-x-addon-symbolic";
+
+          child: $KaoriExtensionsPage extensions_page {};
+        }
+      };
+
+      [bottom]
+      Adw.ViewSwitcherBar switcher_bar {
+        stack: browse_stack;
+      }
+    };
+
+    Adw.Breakpoint {
+      condition ("max-width: 550sp")
+
+      setters {
+        view_switcher.visible: false;
+        window_title.visible: true;
+        switcher_bar.reveal: true;
+      }
+    }
+  };
+}

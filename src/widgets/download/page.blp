@@ -1,0 +1,106 @@
+using Gtk 4.0;
+using Adw 1;
+using Gio 2.0;
+
+template $KaoriDownloadsPage : Adw.NavigationPage {
+  title: _("Downloads");
+  tag: "downloads";
+
+  child: Gtk.Stack {
+    transition-type: crossfade;
+    visible-child-name: bind $get_page((template.downloads as <Gio.ListStore>).n-items) as <string>;
+
+    Gtk.StackPage {
+      name: "greeter";
+      child: Adw.ToolbarView {
+        extend-content-to-top-edge: true;
+        [top]
+        Adw.HeaderBar {}
+
+        content: Adw.StatusPage {
+          icon-name: "folder-download-symbolic";
+          title: _("No running downloads");
+          description: _("Chapters you queue will show up here");
+        };
+      };
+    }
+
+    Gtk.StackPage {
+      name: "downloads";
+      child: Adw.ToolbarView {
+        [top]
+        Adw.HeaderBar {
+          title-widget: Gtk.SearchEntry search_entry {
+            hexpand: true;
+            placeholder-text: _("Search for a chapter");
+          };
+
+          [end]
+          Gtk.Button {
+            styles ["flat"]
+            icon-name: "user-trash-symbolic";
+            tooltip-text: _("Clear queue");
+            clicked => $on_clear_clicked();
+          }
+
+          [start]
+          Gtk.Button {
+            styles ["flat"]
+            icon-name: bind $get_toggle_icon(template.downloader_state) as <string>;
+            tooltip-text: bind $get_toggle_tooltip(template.downloader_state) as <string>;
+            clicked => $on_toggle_clicked();
+          }
+        }
+
+        content: Gtk.ScrolledWindow {
+          hscrollbar-policy: never;
+
+          child: Gtk.ListView {
+            styles [
+              "navigation-sidebar"
+            ]
+            margin-start: 12;
+            margin-end: 12;
+
+            model: Gtk.NoSelection {
+              model: Gtk.SortListModel {
+                section-sorter: Gtk.NumericSorter {
+                  expression: expr item as <$KaoriDownload>.manga_id;
+                };
+
+                model: Gtk.FilterListModel {
+                  filter: Gtk.AnyFilter {
+                    Gtk.StringFilter {
+                      expression: expr item as <$KaoriDownload>.manga_title;
+                      search: bind search_entry.text;
+                      match-mode: substring;
+                    }
+
+                    Gtk.StringFilter {
+                      expression: expr item as <$KaoriDownload>.chapter_name;
+                      search: bind search_entry.text;
+                      match-mode: substring;
+                    }
+                  };
+
+                  model: bind template.downloads;
+                };
+              };
+            };
+
+            factory: Gtk.SignalListItemFactory {
+              setup => $on_setup();
+              bind => $on_bind();
+              unbind => $on_unbind();
+            };
+
+            header-factory: Gtk.SignalListItemFactory {
+              setup => $on_header_setup();
+              bind => $on_header_bind();
+            };
+          };
+        };
+      };
+    }
+  };
+}

@@ -1,0 +1,58 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriMangaRow : Gtk.Box {
+  orientation: vertical;
+  spacing: 6;
+
+  Gtk.Label {
+    styles [
+      "title-4"
+    ]
+    label: bind template.title;
+    xalign: 0;
+    ellipsize: end;
+    margin-start: 6;
+  }
+  Gtk.Overlay {
+    styles [
+      "rounded"
+    ]
+    [overlay]
+    Adw.Bin {
+      halign: start;
+      vexpand: true;
+      width-request: 10;
+      styles [
+        "row-overlay-left"
+      ]
+    }
+
+    [overlay]
+    Adw.Bin {
+      halign: end;
+      vexpand: true;
+      width-request: 10;
+      styles [
+        "row-overlay-right"
+      ]
+    }
+
+    child: Gtk.ScrolledWindow {
+      hscrollbar-policy: external;
+      vscrollbar-policy: never;
+
+      child: Gtk.ListView listview {
+        styles [
+          "manga-row",
+          "inherit-color"
+        ]
+        orientation: horizontal;
+        single-click-activate: true;
+        hscroll-policy: natural;
+        vscroll-policy: minimum;
+        height-request: 325;
+      };
+    };
+  }
+}

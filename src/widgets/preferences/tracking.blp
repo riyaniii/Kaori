@@ -1,0 +1,46 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriTrackingPreferences : Adw.PreferencesPage {
+  name: "tracking";
+  title: _("Tracking");
+  icon-name: "arrows-circle-symbolic";
+
+  Adw.PreferencesGroup trackers_group {
+    title: _("Trackers");
+    description: _("Sign in to keep your reading progress on sites like AniList and MyAnimeList");
+  }
+
+  Adw.PreferencesGroup {
+    title: _("KOReader Sync");
+    description: _("Share reading progress with KOReader devices");
+
+    Adw.ActionRow kosync_row {
+      title: _("Account");
+      subtitle: _("Not signed in");
+
+      [suffix]
+      Gtk.Button kosync_button {
+        valign: center;
+        label: _("Sign In");
+        clicked => $on_kosync_clicked();
+      }
+    }
+
+    Adw.ComboRow kosync_forward_row {
+      title: _("When KOReader Is Ahead");
+      model: Gtk.StringList {
+        strings [_("Ask in the Web Interface"), _("Keep This Progress"), _("Use KOReader's Progress"), _("Don't Sync")]
+      };
+      notify::selected => $on_strategy_changed();
+    }
+
+    Adw.ComboRow kosync_backward_row {
+      title: _("When KOReader Is Behind");
+      model: Gtk.StringList {
+        strings [_("Ask in the Web Interface"), _("Keep This Progress"), _("Use KOReader's Progress"), _("Don't Sync")]
+      };
+      notify::selected => $on_strategy_changed();
+    }
+  }
+}

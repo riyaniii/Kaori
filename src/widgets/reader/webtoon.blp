@@ -1,0 +1,7 @@
+using Gtk 4.0;
+
+template $KaoriWebtoonReader : $KaoriReaderBase {
+  child: Gtk.ScrolledWindow scrolled_window {
+    child: $KaoriCanvas canvas {};
+  };
+}

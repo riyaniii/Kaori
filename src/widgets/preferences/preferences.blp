@@ -1,0 +1,716 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriPreferencesDialog : Adw.PreferencesDialog {
+  content-width: 800;
+  content-height: 640;
+  search-enabled: true;
+
+  Adw.PreferencesPage {
+    name: "reader";
+    title: _("Reader");
+    icon-name: "view-paged-symbolic";
+
+    Adw.PreferencesGroup {
+      title: _("Reading");
+
+      Adw.InlineViewSwitcher {
+        margin-top: 12;
+        margin-bottom: 12;
+        stack: bind template.mode_stack;
+        sensitive: bind template.loaded;
+
+        accessibility {
+          label: _("Reading mode");
+        }
+      }
+
+      Adw.ComboRow orientation_row {
+        title: _("Webtoon Orientation");
+        model: Gtk.StringList {
+          strings [_("Vertical"), _("Horizontal")]
+        };
+        notify::selected => $on_orientation_changed();
+      }
+
+      Adw.ComboRow direction_row {
+        title: _("Reading Direction");
+        model: Gtk.StringList {
+          strings [_("Left to Right"), _("Right to Left")]
+        };
+        sensitive: bind template.loaded;
+        notify::selected => $on_direction_changed();
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Library Display");
+
+      Adw.ComboRow display_mode_row {
+        title: _("Display Mode");
+        model: Gtk.StringList {
+          strings [_("Compact Grid"), _("Comfortable Grid")]
+        };
+        notify::selected => $on_display_mode_changed();
+      }
+
+      Adw.SwitchRow unread_badge_row {
+        title: _("Unread Badges");
+        subtitle: _("Show unread chapters on covers");
+      }
+
+      Adw.SwitchRow download_badge_row {
+        title: _("Download Badges");
+        subtitle: _("Show downloaded chapters on covers");
+      }
+    }
+  }
+
+  Adw.PreferencesPage {
+    name: "sources";
+    title: _("Sources");
+    icon-name: "compass-symbolic";
+
+    Adw.PreferencesGroup {
+      title: _("Extensions");
+      sensitive: bind template.loaded;
+
+      Adw.ActionRow {
+        title: _("Extension Stores");
+        subtitle: _("Where extensions can be installed from");
+        activatable: true;
+        activated => $on_stores_activated();
+
+        [suffix]
+        Gtk.Image {
+          icon-name: "go-next-symbolic";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Install from File");
+        subtitle: _("Install an extension APK you downloaded yourself");
+        activatable: true;
+        activated => $on_install_file_activated();
+
+        [suffix]
+        Gtk.Image {
+          icon-name: "document-open-symbolic";
+        }
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Local Source");
+      description: _("Read manga stored on your computer. Put each manga in its own folder, with a folder or a CBZ for every chapter, and add a cover.jpg for a custom cover");
+      sensitive: bind template.loaded;
+      visible: bind template.local;
+
+      Adw.ActionRow local_source_row {
+        title: _("Local Source Folder");
+        subtitle: _("Default");
+        activatable: true;
+        activated => $on_path_activated();
+
+        [suffix]
+        Gtk.Button {
+          styles ["flat"]
+          valign: center;
+          icon-name: "edit-clear-symbolic";
+          tooltip-text: _("Use Default");
+          clicked => $on_path_cleared();
+
+          accessibility {
+            label: _("Use default local source folder");
+          }
+        }
+
+        [suffix]
+        Gtk.Button {
+          styles ["flat"]
+          valign: center;
+          icon-name: "folder-open-symbolic";
+          tooltip-text: _("Open Folder");
+          clicked => $on_path_opened();
+
+          accessibility {
+            label: _("Open local source folder");
+          }
+        }
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Cloudflare Bypass");
+      description: _("Use FlareSolverr or Byparr to get past Cloudflare checks");
+      sensitive: bind template.loaded;
+
+      Adw.ExpanderRow flaresolverr_row {
+        title: _("Use FlareSolverr");
+        show-enable-switch: true;
+        notify::enable-expansion => $on_expander_toggled();
+
+        Adw.EntryRow flaresolverr_url_row {
+          title: _("Server URL");
+          input-purpose: url;
+          show-apply-button: true;
+          apply => $on_entry_applied();
+        }
+
+        Adw.SpinRow flaresolverr_timeout_row {
+          title: _("Timeout");
+          subtitle: _("Seconds to wait for a challenge");
+          adjustment: Gtk.Adjustment {
+            lower: 1;
+            upper: 600;
+            step-increment: 5;
+            page-increment: 30;
+          };
+          notify::value => $on_spin_changed();
+        }
+
+        Adw.EntryRow flaresolverr_session_row {
+          title: _("Session Name");
+          show-apply-button: true;
+          apply => $on_entry_applied();
+        }
+
+        Adw.SpinRow flaresolverr_ttl_row {
+          title: _("Session Lifetime");
+          subtitle: _("Minutes before cookies are forgotten");
+          adjustment: Gtk.Adjustment {
+            lower: 1;
+            upper: 1440;
+            step-increment: 5;
+            page-increment: 30;
+          };
+          notify::value => $on_spin_changed();
+        }
+
+        Adw.SwitchRow flaresolverr_fallback_row {
+          title: _("Use Response as Fallback");
+          subtitle: _("Use FlareSolverr's page when only Suwayomi sees a challenge");
+          notify::active => $on_switch_toggled();
+        }
+      }
+    }
+  }
+
+  Adw.PreferencesPage {
+    name: "library";
+    title: _("Library");
+    icon-name: "library-symbolic";
+
+    Adw.PreferencesGroup {
+      title: _("Updates");
+      sensitive: bind template.loaded;
+
+      Adw.SpinRow update_interval_row {
+        title: _("Update Interval");
+        subtitle: _("Hours between updates (0 = off, minimum 6)");
+        adjustment: Gtk.Adjustment {
+          lower: 0;
+          upper: 720;
+          step-increment: 1;
+          page-increment: 6;
+        };
+        notify::value => $on_spin_changed();
+      }
+
+      Adw.SpinRow parallel_sources_row {
+        title: _("Parallel Sources");
+        subtitle: _("Sources that can update or download at once");
+        adjustment: Gtk.Adjustment {
+          lower: 1;
+          upper: 20;
+          step-increment: 1;
+          page-increment: 2;
+        };
+        notify::value => $on_spin_changed();
+      }
+
+      Adw.SwitchRow update_mangas_row {
+        title: _("Refresh Manga Details");
+        subtitle: _("Also update titles, covers and descriptions");
+        notify::active => $on_switch_toggled();
+      }
+
+      Adw.SwitchRow exclude_unread_row {
+        title: _("Skip Manga with Unread Chapters");
+        notify::active => $on_switch_toggled();
+      }
+
+      Adw.SwitchRow exclude_not_started_row {
+        title: _("Skip Manga You Haven't Started");
+        notify::active => $on_switch_toggled();
+      }
+
+      Adw.SwitchRow exclude_completed_row {
+        title: _("Skip Completed Manga");
+        notify::active => $on_switch_toggled();
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Automatic Downloads");
+      sensitive: bind template.loaded;
+
+      Adw.ExpanderRow auto_download_row {
+        title: _("Download New Chapters");
+        subtitle: _("Download chapters found by library updates");
+        show-enable-switch: true;
+        notify::enable-expansion => $on_expander_toggled();
+
+        Adw.SwitchRow auto_download_skip_unread_row {
+          title: _("Skip Manga with Unread Chapters");
+          notify::active => $on_switch_toggled();
+        }
+
+        Adw.SpinRow auto_download_limit_row {
+          title: _("Unread Download Limit");
+          subtitle: _("Stop when this many unread chapters are downloaded (0 = no limit)");
+          adjustment: Gtk.Adjustment {
+            lower: 0;
+            upper: 1000;
+            step-increment: 1;
+            page-increment: 10;
+          };
+          notify::value => $on_spin_changed();
+        }
+
+        Adw.SwitchRow auto_download_reuploads_row {
+          title: _("Ignore Re-uploads");
+          subtitle: _("Don't download chapters that were uploaded again");
+          notify::active => $on_switch_toggled();
+        }
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Downloads");
+      sensitive: bind template.loaded;
+
+      Adw.SwitchRow cbz_row {
+        title: _("Save as CBZ Archive");
+        subtitle: _("Compress each chapter into one CBZ file");
+        notify::active => $on_switch_toggled();
+      }
+
+      Adw.ActionRow location_row {
+        title: _("Download Location");
+        subtitle: _("Default");
+        activatable: true;
+        visible: bind template.local;
+        activated => $on_path_activated();
+
+        [suffix]
+        Gtk.Button {
+          styles ["flat"]
+          valign: center;
+          icon-name: "edit-clear-symbolic";
+          tooltip-text: _("Use Default");
+          clicked => $on_path_cleared();
+
+          accessibility {
+            label: _("Use default download location");
+          }
+        }
+
+        [suffix]
+        Gtk.Button {
+          styles ["flat"]
+          valign: center;
+          icon-name: "folder-open-symbolic";
+          tooltip-text: _("Open Folder");
+          clicked => $on_path_opened();
+
+          accessibility {
+            label: _("Open download folder");
+          }
+        }
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Backups");
+      description: _("The server saves a copy of your library on a schedule");
+      sensitive: bind template.loaded;
+
+      Adw.ActionRow backup_path_row {
+        title: _("Backup Location");
+        subtitle: _("Default");
+        activatable: true;
+        visible: bind template.local;
+        activated => $on_path_activated();
+
+        [suffix]
+        Gtk.Button {
+          styles ["flat"]
+          valign: center;
+          icon-name: "edit-clear-symbolic";
+          tooltip-text: _("Use Default");
+          clicked => $on_path_cleared();
+
+          accessibility {
+            label: _("Use default backup location");
+          }
+        }
+
+        [suffix]
+        Gtk.Button {
+          styles ["flat"]
+          valign: center;
+          icon-name: "folder-open-symbolic";
+          tooltip-text: _("Open Folder");
+          clicked => $on_path_opened();
+
+          accessibility {
+            label: _("Open backup folder");
+          }
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Create Backup");
+        subtitle: _("Save a copy of your library to a file");
+        activatable: true;
+        activated => $on_create_backup_activated();
+
+        [suffix]
+        Gtk.Image {
+          icon-name: "document-save-symbolic";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Restore Backup");
+        subtitle: _("Bring back a library from a backup file");
+        activatable: true;
+        activated => $on_restore_backup_activated();
+
+        [suffix]
+        Gtk.Image {
+          icon-name: "document-open-symbolic";
+        }
+      }
+
+      Adw.EntryRow backup_time_row {
+        title: _("Backup Time (HH:MM)");
+        show-apply-button: true;
+        apply => $on_entry_applied();
+      }
+
+      Adw.SpinRow backup_interval_row {
+        title: _("Backup Interval");
+        subtitle: _("Days between backups (0 = off)");
+        adjustment: Gtk.Adjustment {
+          lower: 0;
+          upper: 365;
+          step-increment: 1;
+          page-increment: 7;
+        };
+        notify::value => $on_spin_changed();
+      }
+
+      Adw.SpinRow backup_retention_row {
+        title: _("Keep Backups For");
+        subtitle: _("Days before old backups are deleted (0 = keep)");
+        adjustment: Gtk.Adjustment {
+          lower: 0;
+          upper: 365;
+          step-increment: 1;
+          page-increment: 7;
+        };
+        notify::value => $on_spin_changed();
+      }
+
+      Adw.ExpanderRow {
+        title: _("Backup Contents");
+        subtitle: _("What scheduled backups include");
+
+        Adw.SwitchRow backup_manga_row {
+          title: _("Library");
+          notify::active => $on_switch_toggled();
+        }
+
+        Adw.SwitchRow backup_categories_row {
+          title: _("Categories");
+          notify::active => $on_switch_toggled();
+        }
+
+        Adw.SwitchRow backup_chapters_row {
+          title: _("Chapters");
+          notify::active => $on_switch_toggled();
+        }
+
+        Adw.SwitchRow backup_tracking_row {
+          title: _("Tracking");
+          notify::active => $on_switch_toggled();
+        }
+
+        Adw.SwitchRow backup_history_row {
+          title: _("History");
+          notify::active => $on_switch_toggled();
+        }
+
+        Adw.SwitchRow backup_client_row {
+          title: _("App Settings");
+          notify::active => $on_switch_toggled();
+        }
+
+        Adw.SwitchRow backup_server_row {
+          title: _("Server Settings");
+          notify::active => $on_switch_toggled();
+        }
+      }
+    }
+  }
+
+  $KaoriTrackingPreferences {}
+
+  Adw.PreferencesPage {
+    name: "server";
+    title: _("Server");
+    icon-name: "network-server-symbolic";
+
+    Adw.PreferencesGroup {
+      title: _("Connection");
+
+      Adw.ActionRow {
+        title: _("Suwayomi Instance");
+        subtitle: _("Switch between a local or remote server");
+        activatable: true;
+        action-name: "app.change_instance";
+
+        [suffix]
+        Gtk.Image {
+          icon-name: "go-next-symbolic";
+        }
+      }
+
+      Adw.ActionRow {
+        title: _("Open in Browser");
+        subtitle: _("Open the server's web interface");
+        activatable: true;
+        activated => $on_open_browser_activated();
+
+        [suffix]
+        Gtk.Image {
+          icon-name: "go-next-symbolic";
+        }
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Login");
+      description: _("Ask for a username and password before anyone can use the server");
+      sensitive: bind template.loaded;
+
+      Adw.ComboRow auth_mode_row {
+        title: _("Login Type");
+        model: Gtk.StringList {
+          strings [_("No Login"), _("Basic Authentication"), _("Login Page"), _("Web Interface Login")]
+        };
+      }
+
+      Adw.EntryRow auth_username_row {
+        title: _("Username");
+      }
+
+      Adw.PasswordEntryRow auth_password_row {
+        title: _("Password");
+      }
+
+      Adw.ButtonRow {
+        title: _("Save Login");
+        activated => $on_save_login_activated();
+      }
+    }
+
+    Adw.PreferencesGroup background_group {
+      title: _("Background");
+
+      Adw.SwitchRow background_row {
+        title: _("Keep Server Running in Background");
+        subtitle: _("Keep the local server running after the window is closed");
+      }
+
+      Adw.SwitchRow startup_row {
+        title: _("Run on Startup");
+        subtitle: _("Start the server when you log in");
+        sensitive: bind background_row.active;
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Proxy");
+      description: _("Send the server's network traffic through a SOCKS proxy");
+      sensitive: bind template.loaded;
+
+      Adw.ExpanderRow proxy_row {
+        title: _("Use SOCKS Proxy");
+        show-enable-switch: true;
+        notify::enable-expansion => $on_expander_toggled();
+
+        Adw.ComboRow proxy_version_row {
+          title: _("Version");
+          model: Gtk.StringList {
+            strings ["SOCKS5", "SOCKS4"]
+          };
+          notify::selected => $on_proxy_version_changed();
+        }
+
+        Adw.EntryRow proxy_host_row {
+          title: _("Host");
+          show-apply-button: true;
+          apply => $on_entry_applied();
+        }
+
+        Adw.EntryRow proxy_port_row {
+          title: _("Port");
+          show-apply-button: true;
+          apply => $on_entry_applied();
+        }
+
+        Adw.EntryRow proxy_username_row {
+          title: _("Username");
+          show-apply-button: true;
+          apply => $on_entry_applied();
+        }
+
+        Adw.PasswordEntryRow proxy_password_row {
+          title: _("Password");
+          show-apply-button: true;
+          apply => $on_entry_applied();
+        }
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("SyncYomi");
+      description: _("Keep your library in sync with a SyncYomi server");
+      sensitive: bind template.loaded;
+
+      Adw.ExpanderRow syncyomi_row {
+        title: _("Use SyncYomi");
+        show-enable-switch: true;
+        notify::enable-expansion => $on_expander_toggled();
+
+        Adw.EntryRow syncyomi_host_row {
+          title: _("Server URL");
+          input-purpose: url;
+          show-apply-button: true;
+          apply => $on_entry_applied();
+        }
+
+        Adw.PasswordEntryRow syncyomi_key_row {
+          title: _("API Key");
+          show-apply-button: true;
+          apply => $on_entry_applied();
+        }
+
+        Adw.SwitchRow sync_manga_row {
+          title: _("Sync Library");
+          notify::active => $on_switch_toggled();
+        }
+
+        Adw.SwitchRow sync_chapters_row {
+          title: _("Sync Chapters");
+          notify::active => $on_switch_toggled();
+        }
+
+        Adw.SwitchRow sync_categories_row {
+          title: _("Sync Categories");
+          notify::active => $on_switch_toggled();
+        }
+
+        Adw.SwitchRow sync_tracking_row {
+          title: _("Sync Tracking");
+          notify::active => $on_switch_toggled();
+        }
+
+        Adw.SwitchRow sync_history_row {
+          title: _("Sync History");
+          notify::active => $on_switch_toggled();
+        }
+
+        Adw.ButtonRow {
+          title: _("Sync Now");
+          activated => $on_sync_now_activated();
+        }
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("OPDS Feed");
+      description: _("Let other reading apps browse your library");
+      sensitive: bind template.loaded;
+
+      Adw.ActionRow opds_url_row {
+        styles ["property"]
+        title: _("Feed Address");
+        subtitle-selectable: true;
+
+        [suffix]
+        Gtk.Button {
+          styles ["flat"]
+          valign: center;
+          icon-name: "edit-copy-symbolic";
+          tooltip-text: _("Copy Address");
+          clicked => $on_copy_opds_clicked();
+        }
+      }
+
+      Adw.SpinRow opds_items_row {
+        title: _("Items per Page");
+        adjustment: Gtk.Adjustment {
+          lower: 10;
+          upper: 5000;
+          step-increment: 10;
+          page-increment: 50;
+        };
+        notify::value => $on_spin_changed();
+      }
+
+      Adw.SwitchRow opds_unread_row {
+        title: _("Only Show Unread Chapters");
+        notify::active => $on_switch_toggled();
+      }
+
+      Adw.SwitchRow opds_downloaded_row {
+        title: _("Only Show Downloaded Chapters");
+        notify::active => $on_switch_toggled();
+      }
+
+      Adw.SwitchRow opds_mark_read_row {
+        title: _("Mark as Read When Downloaded");
+        notify::active => $on_switch_toggled();
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Maintenance");
+      sensitive: bind template.loaded;
+
+      Adw.ActionRow {
+        title: _("Clear Image Cache");
+        subtitle: _("Delete saved covers and pages that weren't downloaded");
+        activatable: true;
+        activated => $on_clear_images_activated();
+      }
+
+      Adw.ActionRow {
+        title: _("Clear Cookies");
+        subtitle: _("Sign out of every source website");
+        activatable: true;
+        activated => $on_clear_cookies_activated();
+      }
+
+      Adw.SwitchRow debug_logs_row {
+        title: _("Debug Logs");
+        subtitle: _("Write more details to the server log");
+        notify::active => $on_switch_toggled();
+      }
+    }
+  }
+}

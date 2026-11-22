@@ -1,0 +1,12 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriSinglePageReader : $KaoriPagedReader {
+  child: Gtk.ScrolledWindow scrolled_window {
+    child: Gtk.Picture picture {
+      content-fit: contain;
+      halign: center;
+      valign: center;
+    };
+  };
+}

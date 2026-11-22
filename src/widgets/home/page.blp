@@ -1,0 +1,93 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriHomePage : Adw.NavigationPage {
+  title: _("Home");
+  tag: "home";
+
+  child: Adw.ToolbarView {
+    extend-content-to-top-edge: true;
+
+    [top]
+    Adw.HeaderBar {
+      show-title: false;
+
+      [end]
+      Gtk.Button {
+        styles [
+          "flat",
+          "circular"
+        ]
+        icon-name: "system-search-symbolic";
+        tooltip-text: _("Search");
+        action-name: "app.open_search_page";
+      }
+    }
+
+    content: Gtk.Stack {
+      transition-type: crossfade;
+      visible-child-name: bind template.state;
+
+      Gtk.StackPage {
+        name: "home";
+        child: Gtk.ScrolledWindow {
+          hscrollbar-policy: never;
+          child: Gtk.Box main_box {
+            orientation: vertical;
+            valign: start;
+            spacing: 12;
+
+            margin-top: 12;
+            margin-start: 12;
+            margin-end: 12;
+
+            Gtk.Stack carousel_stack {
+              transition-type: crossfade;
+              height-request: 310;
+              Gtk.StackPage {
+                name: "carousel";
+                child: Gtk.Overlay {
+                  child: Adw.Clamp {
+                    orientation: vertical;
+                    maximum-size: 295;
+                    child: Adw.Carousel manga_carousel {
+                      styles [
+                        "rounded"
+                      ]
+                      hexpand: true;
+                      vexpand: true;
+                    };
+                  };
+
+                  [overlay]
+                  Adw.CarouselIndicatorDots {
+                    carousel: manga_carousel;
+                    valign: end;
+                  }
+                };
+              }
+
+              Gtk.StackPage {
+                name: "empty";
+                child: Adw.StatusPage {
+                  icon-name: "user-home-symbolic";
+                  title: _("Hello!");
+                  description: _("Your library is empty");
+                };
+              }
+            }
+          };
+        };
+      }
+
+      Gtk.StackPage {
+        name: "greeter";
+        child: Adw.StatusPage {
+          icon-name: "user-home-symbolic";
+          title: _("Welcome to Kaori");
+          description: _("Start by adding extension stores");
+        };
+      }
+    };
+  };
+}

@@ -1,0 +1,136 @@
+.manga-grid {
+  background: none;
+  color: inherit;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.manga-grid > child,
+.manga-row > row {
+  margin: 0;
+  padding: 0;
+}
+
+.manga-row > row {
+  border-radius: 9px;
+}
+
+.inherit-color {
+  background: none;
+  color: inherit;
+}
+
+
+.little-bold {
+  font-weight: 550;
+}
+
+.r5 {
+  border-radius: 5px;
+}
+
+.rounded {
+  border-radius: 9px;
+}
+
+.genres > button {
+  border-radius: 25px;
+}
+
+.overview-genres > button {
+  border-radius: 25px;
+  font-size: 14px;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+
+.reader-header {
+  background: linear-gradient(to bottom, rgba(0,0,0,0.20), transparent);
+  box-shadow: none;
+}
+
+.reader-osd {
+    color: white;
+    text-shadow:
+      0px 0px 3px rgba(0, 0, 0, 0.6),
+      0px 0px 7px rgba(0, 0, 0, 0.5),
+      0px 0px 10px rgba(0, 0, 0, 0.4);
+    -gtk-icon-shadow:
+      0px 0px 3px rgba(0, 0, 0, 0.6),
+      0px 0px 7px rgba(0, 0, 0, 0.5),
+      0px 0px 10px rgba(0, 0, 0, 0.4);
+}
+
+popover {
+  text-shadow: none;
+}
+
+.row-overlay-right {
+  margin-right: -1px;
+  background: linear-gradient(to left,
+    var(--window-bg-color) 0%,
+    transparent 100%
+  );
+}
+
+.row-overlay-left {
+  margin-left: -1px;
+  background: linear-gradient(to right,
+    var(--window-bg-color) 0%,
+    transparent 100%
+  );
+}
+
+.badge {
+  background: var(--accent-bg-color);
+  color: var(--accent-fg-color);
+  border-radius: 5px;
+
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 3px;
+  padding-right: 3px;
+
+  font-size: smaller;
+  font-weight: bold;
+  min-width: 1rem;
+}
+
+.category-button {
+  font-weight: normal;
+}
+
+.drop-target {
+  background: alpha(var(--accent-bg-color), 0.15);
+  border-radius: 6px;
+}
+
+.donate {
+  color: var(--accent-fg-color);
+  background-image: linear-gradient(
+    135deg,
+    var(--accent-bg-color) 0%,
+    shade(var(--accent-bg-color), 1.25) 30%,
+    var(--accent-bg-color) 45%,
+    shade(var(--accent-bg-color), 0.65) 100%
+  );
+}
+
+.donate headerbar {
+  background: none;
+  box-shadow: none;
+  color: inherit;
+}
+
+.donate-button {
+  background: white;
+  color: shade(var(--accent-bg-color), 0.65);
+  font-weight: bold;
+}
+
+.donate-button:hover {
+  background: alpha(white, 0.9);
+}

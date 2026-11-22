@@ -1,0 +1,74 @@
+using Gtk 4.0;
+using Adw 1;
+using Gio 2.0;
+
+template $KaoriHistoryPage : Adw.NavigationPage {
+  title: _("History");
+  tag: "history";
+
+  child: Gtk.Stack {
+    transition-type: crossfade;
+    visible-child-name: bind $get_page((template.entries as <Gio.ListStore>).n-items) as <string>;
+
+    Gtk.StackPage {
+      name: "greeter";
+      child: Adw.ToolbarView {
+        extend-content-to-top-edge: true;
+
+        [top]
+        Adw.HeaderBar {}
+
+        content: Adw.StatusPage {
+          icon-name: "sand-watch-symbolic";
+          title: _("No history yet");
+          description: _("Chapters you read will show up here");
+        };
+      };
+    }
+
+    Gtk.StackPage {
+      name: "history";
+      child: Adw.ToolbarView {
+        [top]
+        Adw.HeaderBar {}
+
+        content: Gtk.ScrolledWindow scrolled {
+          hscrollbar-policy: never;
+          edge-reached => $on_edge_reached();
+
+          child: Gtk.ListView {
+            styles [
+              "navigation-sidebar"
+            ]
+            margin-start: 12;
+            margin-end: 12;
+            single-click-activate: true;
+            activate => $on_activate();
+
+            model: Gtk.NoSelection {
+              model: Gtk.SortListModel {
+                section-sorter: Gtk.NumericSorter {
+                  expression: expr item as <$KaoriHistoryEntry>.day_number;
+                  sort-order: descending;
+                };
+
+                model: bind template.entries;
+              };
+            };
+
+            factory: Gtk.SignalListItemFactory {
+              setup => $on_setup();
+              bind => $on_bind();
+              unbind => $on_unbind();
+            };
+
+            header-factory: Gtk.SignalListItemFactory {
+              setup => $on_header_setup();
+              bind => $on_header_bind();
+            };
+          };
+        };
+      };
+    }
+  };
+}

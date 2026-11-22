@@ -1,0 +1,100 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriDownloadDialog : Adw.Dialog {
+  title: _("Download");
+  content-width: 420;
+  content-height: 585;
+
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      show-start-title-buttons: false;
+      show-end-title-buttons: false;
+
+      [start]
+      Gtk.Button {
+        label: _("Cancel");
+        clicked => $on_cancel_clicked();
+      }
+
+      [end]
+      Gtk.Button download_button {
+        styles ["suggested-action"]
+        label: _("Download");
+        clicked => $on_download_clicked();
+      }
+    }
+
+    content: Adw.PreferencesPage {
+      Adw.PreferencesGroup {
+        title: _("Quick select");
+
+        Adw.WrapBox {
+          line-spacing: 6;
+          child-spacing: 6;
+          justify: fill;
+
+          Gtk.Button preset_next {
+            label: _("Next");
+            clicked => $on_preset_clicked();
+          }
+
+          Gtk.Button preset_next_5 {
+            label: _("Next 5");
+            clicked => $on_preset_clicked();
+          }
+
+          Gtk.Button preset_next_10 {
+            label: _("Next 10");
+            clicked => $on_preset_clicked();
+          }
+
+          Gtk.Button preset_next_25 {
+            label: _("Next 25");
+            clicked => $on_preset_clicked();
+          }
+
+          Gtk.Button preset_unread {
+            label: _("Unread");
+            clicked => $on_preset_clicked();
+          }
+
+          Gtk.Button preset_all {
+            label: _("All");
+            clicked => $on_preset_clicked();
+          }
+        }
+      }
+
+      Adw.PreferencesGroup {
+        title: _("Range");
+
+        Adw.ComboRow from_row {
+          title: _("From chapter");
+          enable-search: true;
+          expression: expr item as <Gtk.StringObject>.string;
+          notify::selected => $on_from_changed();
+        }
+
+        Adw.ComboRow to_row {
+          title: _("To chapter");
+          enable-search: true;
+          expression: expr item as <Gtk.StringObject>.string;
+          notify::selected => $on_to_changed();
+        }
+
+        Adw.SwitchRow skip_read_row {
+          title: _("Skip read chapters");
+          notify::active => $on_skip_read_changed();
+        }
+      }
+
+      Adw.PreferencesGroup {
+        Adw.ActionRow summary_row {
+          title: _("Nothing to download");
+        }
+      }
+    };
+  };
+}

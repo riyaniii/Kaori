@@ -1,0 +1,65 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KaoriReaderPage : Adw.NavigationPage {
+  title: bind template.manga_model as <$KaoriManga> .title;
+
+  can-pop: false;
+
+  child: Gtk.Overlay {
+    child: Adw.ViewStack stack {
+      enable-transitions: true;
+    };
+
+    [overlay]
+    Revealer revealer {
+      valign: start;
+      transition-duration: 300;
+      transition-type: crossfade;
+      reveal-child: true;
+
+      Adw.HeaderBar header {
+        styles [
+          "reader-header",
+          "reader-osd"
+        ]
+        centering-policy: strict;
+
+        [start]
+        Gtk.Button {
+          icon-name: "go-previous-symbolic";
+          clicked => $on_back_clicked();
+          tooltip-text: bind template.manga_model as <$KaoriManga> .title;
+        }
+
+        [start]
+        Gtk.Label {
+          styles ["little-bold"]
+          label: bind template.manga_model as <$KaoriManga> .title;
+          ellipsize: middle;
+        }
+
+        title-widget: Adw.WindowTitle {
+          title: bind template.chapter_model as <$KaoriChapter> .name;
+        };
+
+        [end]
+        Gtk.Box {
+          orientation: horizontal;
+
+          Gtk.Button {
+            icon-name: "sliders-horizontal-symbolic";
+            clicked => $on_settings_clicked();
+            tooltip-text: _("Open Reader Settings");
+          }
+
+          Gtk.Button {
+            icon-name: "panel-right-symbolic";
+            action-name: "app.toggle_chapter_panel";
+            tooltip-text: _("Show Chapter Panel");
+          }
+        }
+      }
+    }
+  };
+}
