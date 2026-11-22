@@ -57,10 +57,6 @@ On macOS you can also install Kaori with [Homebrew](https://brew.sh):
 brew tap riyaniii/kaori https://github.com/riyaniii/Kaori
 brew install --cask kaori
 ```
-
-### Translations
-Kaori can be translated. Copy `po/kaori.pot` to `po/<language code>.po` (for example `po/hr.po`), translate it with a tool like [Poedit](https://poedit.net), add the language code to `po/LINGUAS` and open a pull request.
-
 ## Screenshots
 
 <img src="assets/Screenshots/home.png" width="100%">
