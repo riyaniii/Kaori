@@ -57,7 +57,6 @@ jobs:
             adwaita-icon-theme gsettings-desktop-schemas \
             gobject-introspection
           echo "$(brew --prefix gettext)/bin" >> "$GITHUB_PATH"
-          python3 -m pip install --break-system-packages --upgrade pip
           python3 -m pip install --break-system-packages --ignore-installed \
             pyinstaller httpx diskcache babel \
             "gql[aiohttp,websockets,httpx]"
