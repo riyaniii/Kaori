@@ -94,6 +94,25 @@ Kaori can be translated. Copy `po/kaori.pot` to `po/<language code>.po` (for exa
 
 <img src="assets/Screenshots/macos_reader.png" width="100%">
 
+## Other Apps
+
+<table>
+  <tr>
+    <td>
+      <a href="https://flathub.org/en/apps/io.github.riyaniii.Chelsea">
+        <img src="https://raw.githubusercontent.com/riyaniii/Chelsea/master/data/icons/hicolor/scalable/apps/io.github.riyaniii.Chelsea.svg" height="64">
+      </a>
+    </td>
+    <td>
+      <a href="https://flathub.org/en/apps/io.github.riyaniii.Chelsea"><strong>Chelsea</strong></a>
+      <br>
+      Discover and watch movies and series
+      <br>
+      <a href="https://github.com/riyaniii/Chelsea">GitHub</a>
+    </td>
+  </tr>
+</table>
+
 ## Code of Conduct
 This project follows the [GNOME Code of Conduct](https://conduct.gnome.org/)
 
